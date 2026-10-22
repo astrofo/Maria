@@ -1,0 +1,17 @@
+[Unit]
+Description=PostgreSQL backup for Deti Marii volunteer portal
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+TimeoutStartSec=1h
+User=root
+UMask=0077
+WorkingDirectory=@PORTAL_ROOT@
+Environment=PORTAL_COMPOSE_FILE=@PORTAL_COMPOSE_FILE@
+Environment=PORTAL_BACKUP_RETENTION_DAYS=30
+ExecStart=/bin/bash @PORTAL_ROOT@/scripts/backup.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7

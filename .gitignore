@@ -1,0 +1,57 @@
+node_modules/
+.env
+.DS_Store
+npm-debug.log*
+.local/
+.env.*
+!.env.example
+backups/
+test-results/
+.backups/
+*.dump
+release/
+.releases/
+.deploy.lock
+.deployment-compose
+.backup-offsite.env
+.current-release
+.current-release.tmp
+.assistant-preparation/
+.assistant-model.lock
+.backup.lock
+.env.*-pending-*
+
+# Local reports, diagnostic output and publication bundles
+reports/
+review/
+reviews/
+coverage/
+*.log
+*.har
+*.trace
+
+# User data and private deployment material
+uploads/
+*.sql.gz
+*.tar
+*.tar.gz
+*.zip
+*.sqlite*
+*.db
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*-access.txt
+*-password
+
+# Original case files and mockups are local reference materials
+/*.docx
+/*.png
+
+# Editor and OS state
+.idea/
+.vscode/
+._*

@@ -1,0 +1,1150 @@
+/* The original questionnaire, using the layout and components from Figma 04. */
+.questionnaire-page,
+.questionnaire-success {
+  --questionnaire-bg: var(--dm-bg, #f6f5ef);
+  --questionnaire-text: var(--dm-text, #213d35);
+  --questionnaire-muted: var(--dm-muted, #53695f);
+  --questionnaire-mint: var(--dm-mint, #2f6b4f);
+  --questionnaire-soft: var(--dm-softMint, #e5f1e6);
+  --questionnaire-line: var(--dm-line, #d8e0d7);
+  color: var(--questionnaire-text);
+  font-family: Montserrat, sans-serif;
+}
+.questionnaire-page {
+  display: grid;
+  grid-template-columns: minmax(0, 448fr) minmax(0, 752fr);
+  align-items: start;
+  gap: 80px;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.questionnaire-page [hidden] {
+  display: none !important;
+}
+.questionnaire-page p {
+  line-height: 1.5;
+}
+.questionnaire-journey {
+  min-width: 0;
+}
+.questionnaire-eyebrow {
+  margin: 0;
+  color: var(--questionnaire-mint);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 18px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.questionnaire-intro {
+  margin-top: 64px;
+}
+.questionnaire-intro h1 {
+  margin: 0 0 8px;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 56px;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+.questionnaire-intro p:not(.questionnaire-eyebrow) {
+  margin: 0;
+  color: var(--questionnaire-muted);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+.questionnaire-stages {
+  margin-top: 136px;
+}
+.questionnaire-stages h2,
+.questionnaire-stages h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+  letter-spacing: 0;
+}
+.questionnaire-stages h2 {
+  margin-bottom: 15px;
+}
+.questionnaire-stages ol {
+  display: grid;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.questionnaire-stages li {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  padding: 0 8px;
+}
+.questionnaire-stage-number {
+  flex: 0 0 26px;
+  color: var(--questionnaire-mint);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+}
+.questionnaire-stages li > div {
+  min-width: 0;
+}
+.questionnaire-stages li p {
+  margin: 5px 0 0;
+  color: var(--questionnaire-muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.questionnaire-form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  margin: 0;
+  padding: 32px;
+  background: #fff;
+  border: 0;
+  border-radius: 24px;
+  box-shadow: none;
+}
+.questionnaire-form-card > h2 {
+  margin: 0;
+  color: var(--questionnaire-text);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: 0;
+}
+.questionnaire-page .field,
+.questionnaire-page .questionnaire-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.questionnaire-page .field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.questionnaire-page .field > label,
+.questionnaire-page .questionnaire-fieldset > legend {
+  float: none;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 0;
+  color: var(--questionnaire-text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.questionnaire-page .field > label {
+  margin: 0;
+}
+.questionnaire-page .field > input,
+.questionnaire-page .field > select,
+.questionnaire-page .field > textarea,
+.questionnaire-page .skill-level-row select {
+  width: 100%;
+  min-width: 0;
+  min-height: 58px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--questionnaire-line);
+  border-radius: 12px;
+  background-color: #fff;
+  color: var(--questionnaire-text);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  box-shadow: none;
+}
+.questionnaire-page .field > textarea {
+  min-height: 104px;
+  resize: vertical;
+}
+.questionnaire-page input::placeholder,
+.questionnaire-page textarea::placeholder {
+  color: var(--questionnaire-muted);
+  opacity: 0.8;
+}
+.questionnaire-page .choice-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.questionnaire-page .choice-chip {
+  position: relative;
+  max-width: 100%;
+  cursor: pointer;
+}
+.questionnaire-page .choice-chip input,
+.questionnaire-page .day-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.questionnaire-page .choice-chip span {
+  display: block;
+  padding: 8px 16px;
+  border: 1px solid var(--questionnaire-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--questionnaire-muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+.questionnaire-page .choice-chip input:checked + span {
+  background: var(--questionnaire-soft);
+  border-color: var(--questionnaire-mint);
+  color: var(--questionnaire-mint);
+  font-weight: 500;
+}
+.questionnaire-page .choice-chip:hover span {
+  border-color: var(--questionnaire-mint);
+}
+.questionnaire-page .choice-chip:focus-within,
+.questionnaire-page .day-toggle:focus-within {
+  border-radius: 999px;
+  outline: 2px solid var(--questionnaire-mint);
+  outline-offset: 3px;
+}
+.questionnaire-page .custom-choice {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.questionnaire-page .custom-choice input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--questionnaire-line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--questionnaire-text);
+  font-size: 14px;
+  line-height: 20px;
+}
+.questionnaire-page .custom-choice .button {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--questionnaire-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--questionnaire-mint);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  box-shadow: none;
+}
+.questionnaire-page .custom-choice .button:hover {
+  background: var(--questionnaire-soft);
+}
+.questionnaire-page .skill-level-list {
+  display: grid;
+  gap: 12px;
+}
+.questionnaire-page .skill-level-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 16px;
+  padding: 0;
+  background: transparent;
+}
+.questionnaire-page .skill-level-row label {
+  color: var(--questionnaire-muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.questionnaire-page .skill-level-row select {
+  min-height: 48px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 22px;
+}
+.questionnaire-conditional {
+  display: grid;
+  gap: 24px;
+}
+.questionnaire-page .questionnaire-help {
+  margin: 12px 0 0;
+  color: var(--questionnaire-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+.questionnaire-page .availability-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 12px;
+}
+.questionnaire-page .availability-day {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+.questionnaire-page .day-toggle {
+  position: relative;
+  width: 44px;
+  max-width: 100%;
+  cursor: pointer;
+}
+.questionnaire-page .day-toggle span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 0;
+  border: 1px solid var(--questionnaire-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--questionnaire-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 22px;
+}
+.questionnaire-page .day-toggle input:checked + span {
+  border-color: var(--questionnaire-mint);
+  background: var(--questionnaire-mint);
+  color: #fff;
+}
+.questionnaire-page .availability-day > input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 2px;
+  border: 1px solid var(--questionnaire-line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--questionnaire-text);
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+}
+.questionnaire-page .availability-day > input:disabled {
+  background: var(--questionnaire-bg);
+  opacity: 0.6;
+}
+.questionnaire-hours-unit {
+  color: var(--questionnaire-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+.questionnaire-page .availability-total {
+  margin: 16px 0 0;
+  color: var(--questionnaire-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+.questionnaire-save {
+  display: grid;
+  gap: 12px;
+}
+.questionnaire-save-state {
+  color: var(--questionnaire-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+.questionnaire-save-state strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--questionnaire-text);
+  font-weight: 600;
+}
+.questionnaire-save-state.is-complete strong {
+  color: var(--questionnaire-mint);
+}
+.questionnaire-save-state details {
+  margin-top: 8px;
+}
+.questionnaire-save-state summary {
+  cursor: pointer;
+}
+.questionnaire-save-state ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+.questionnaire-page .form-error {
+  margin: 0;
+}
+.questionnaire-page .form-error:empty {
+  display: none;
+}
+.questionnaire-page .questionnaire-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  padding: 15px 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--questionnaire-mint);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
+  box-shadow: none;
+}
+.questionnaire-page .questionnaire-submit:hover {
+  background: #25563f;
+}
+.questionnaire-page .questionnaire-save-caption,
+.questionnaire-page .questionnaire-save > .questionnaire-help {
+  margin: 0;
+  text-align: center;
+  color: var(--dm-dim, #677e71);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+.questionnaire-page #questionnaire-updated:empty {
+  display: none;
+}
+.questionnaire-page :is(input, select, textarea, button):focus-visible,
+.questionnaire-success a:focus-visible {
+  outline: 2px solid var(--questionnaire-mint);
+  outline-offset: 3px;
+}
+.questionnaire-readonly {
+  grid-template-columns: minmax(200px, 0.7fr) minmax(0, 1.5fr);
+  gap: 40px;
+}
+.questionnaire-readonly .questionnaire-intro {
+  margin-top: 32px;
+}
+.questionnaire-readonly .questionnaire-intro h1 {
+  margin-top: 16px;
+  font-size: 40px;
+  line-height: 48px;
+}
+.questionnaire-readonly .questionnaire-save-state {
+  margin-top: 24px;
+}
+.questionnaire-answers {
+  display: grid;
+  gap: 24px;
+  margin: 0;
+}
+.questionnaire-answer dt {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.questionnaire-answer dd {
+  margin: 0;
+  color: var(--questionnaire-muted);
+  font-size: 14px;
+  line-height: 22px;
+  overflow-wrap: anywhere;
+}
+.questionnaire-answer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.questionnaire-answer-tags > span {
+  padding: 8px 16px;
+  background: var(--questionnaire-soft);
+  border: 1px solid var(--questionnaire-line);
+  border-radius: 999px;
+  color: var(--questionnaire-mint);
+  font-size: 14px;
+  line-height: 20px;
+}
+.questionnaire-answer-skills {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.questionnaire-answer-skills li {
+  display: grid;
+  gap: 4px;
+}
+.questionnaire-answer-skills strong {
+  color: var(--questionnaire-text);
+  font-weight: 500;
+}
+.questionnaire-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+  max-width: 800px;
+  margin: 40px auto 64px;
+}
+.questionnaire-success .questionnaire-eyebrow {
+  align-self: flex-start;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0;
+}
+.questionnaire-success-heading {
+  text-align: center;
+}
+.questionnaire-success h1 {
+  margin: 0 0 20px;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 56px;
+  letter-spacing: 0;
+}
+.questionnaire-success p:not(.questionnaire-eyebrow) {
+  margin: 0;
+  color: var(--questionnaire-muted);
+  font-size: 16px;
+  line-height: 24px;
+}
+.questionnaire-success-card {
+  width: 100%;
+  padding: 24px;
+  border-radius: 20px;
+  background: #fff;
+}
+.questionnaire-success h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+  letter-spacing: 0;
+}
+.questionnaire-success-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+.questionnaire-success-actions .button {
+  width: 260px;
+  min-height: 52px;
+  padding: 15px 24px;
+  border: 1px solid var(--questionnaire-mint);
+  border-radius: 999px;
+  background: var(--questionnaire-mint);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  text-align: center;
+}
+.questionnaire-success-actions .button.secondary {
+  width: 280px;
+  border-color: var(--questionnaire-line);
+  background: #fff;
+  color: var(--questionnaire-text);
+}
+@media (max-width: 1199px) {
+  .questionnaire-page {
+    gap: 40px;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr);
+  }
+  .questionnaire-intro h1 {
+    font-size: 40px;
+    line-height: 48px;
+  }
+  .questionnaire-desktop-break {
+    display: none;
+  }
+  .questionnaire-stages {
+    margin-top: 96px;
+  }
+  .questionnaire-stages h3 {
+    font-size: 20px;
+    line-height: 28px;
+  }
+  .questionnaire-stages li {
+    gap: 16px;
+    padding: 0;
+  }
+  .questionnaire-page .availability-grid {
+    gap: 8px;
+  }
+}
+@media (max-width: 959px) {
+  .questionnaire-page {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  .questionnaire-intro {
+    margin-top: 24px;
+  }
+  .questionnaire-intro h1 br {
+    display: none;
+  }
+  .questionnaire-stages {
+    margin-top: 32px;
+  }
+  .questionnaire-stages ol {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .questionnaire-stages li {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .questionnaire-stage-number {
+    font-size: 18px;
+    line-height: 28px;
+    flex-basis: 22px;
+  }
+  .questionnaire-stages li p {
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .questionnaire-readonly .questionnaire-intro {
+    margin-top: 24px;
+  }
+}
+@media (max-width: 599px) {
+  .questionnaire-page {
+    gap: 24px;
+  }
+  .questionnaire-eyebrow {
+    font-size: 10px;
+    line-height: 16px;
+    letter-spacing: 1px;
+  }
+  .questionnaire-intro h1 {
+    font-size: 34px;
+    line-height: 42px;
+  }
+  .questionnaire-intro p:not(.questionnaire-eyebrow) {
+    font-size: 14px;
+    line-height: 22px;
+  }
+  .questionnaire-stages {
+    margin-top: 24px;
+  }
+  .questionnaire-stages h2 {
+    font-size: 20px;
+    line-height: 28px;
+  }
+  .questionnaire-stages ol {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .questionnaire-stages h3 {
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .questionnaire-stages li p {
+    margin-top: 2px;
+  }
+  .questionnaire-form-card {
+    padding: 24px 20px;
+    border-radius: 24px;
+  }
+  .questionnaire-page .choice-chip span {
+    padding: 8px 12px;
+    font-size: 13px;
+    line-height: 20px;
+  }
+  .questionnaire-page .choice-group {
+    gap: 8px;
+  }
+  .questionnaire-page .custom-choice {
+    flex-wrap: wrap;
+  }
+  .questionnaire-page .custom-choice input {
+    flex: 1 1 160px;
+  }
+  .questionnaire-page .custom-choice .button {
+    font-size: 12px;
+  }
+  .questionnaire-page .skill-level-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .questionnaire-page .availability-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px 12px;
+  }
+  .questionnaire-page .questionnaire-submit {
+    font-size: 16px;
+  }
+  .questionnaire-readonly .questionnaire-intro h1 {
+    font-size: 34px;
+    line-height: 42px;
+  }
+  .questionnaire-success {
+    margin: 16px auto 32px;
+    gap: 24px;
+  }
+  .questionnaire-success .questionnaire-eyebrow {
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .questionnaire-success h1 {
+    font-size: 34px;
+    line-height: 42px;
+  }
+  .questionnaire-success h2 {
+    font-size: 20px;
+    line-height: 28px;
+  }
+  .questionnaire-success p:not(.questionnaire-eyebrow) {
+    font-size: 14px;
+    line-height: 22px;
+  }
+  .questionnaire-success-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .questionnaire-success-actions .button,
+  .questionnaire-success-actions .button.secondary {
+    width: 100%;
+  }
+}
+
+/* Tablet and desktop adjustments. Existing phone rules remain independent. */
+@media (min-width: 768px) {
+  .questionnaire-page,
+  .questionnaire-success {
+    min-width: 0;
+  }
+  .questionnaire-page > *,
+  .questionnaire-form-card > *,
+  .questionnaire-success > *,
+  .questionnaire-answer,
+  .questionnaire-answer-skills li {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .questionnaire-form-card {
+    container: questionnaire-form / inline-size;
+  }
+  .questionnaire-page .choice-chip,
+  .questionnaire-answer-tags > span {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .questionnaire-page .choice-chip span,
+  .questionnaire-page .field > label,
+  .questionnaire-page .questionnaire-fieldset > legend,
+  .questionnaire-page .skill-level-row label,
+  .questionnaire-answer dt,
+  .questionnaire-answer dd,
+  .questionnaire-answer-tags > span,
+  .questionnaire-answer-skills strong,
+  .questionnaire-answer-skills span,
+  .questionnaire-save-state,
+  .questionnaire-stages li p,
+  .questionnaire-success h1,
+  .questionnaire-success h2,
+  .questionnaire-success p {
+    overflow-wrap: anywhere;
+  }
+  .questionnaire-page .choice-chip span,
+  .questionnaire-answer-tags > span {
+    white-space: normal;
+  }
+  .questionnaire-page .skill-level-row label {
+    min-width: 0;
+  }
+  .questionnaire-page .custom-choice {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+  .questionnaire-page .custom-choice input {
+    flex: 1 1 180px;
+  }
+  .questionnaire-page .custom-choice .button {
+    max-width: 100%;
+    white-space: normal;
+  }
+  .questionnaire-page .availability-day {
+    min-width: 0;
+  }
+  .questionnaire-page .availability-day > input {
+    padding-inline: 6px;
+  }
+  .questionnaire-readonly {
+    max-width: 1120px;
+  }
+  .questionnaire-success-actions {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+  .questionnaire-success-actions .button {
+    flex: 0 1 260px;
+    max-width: 100%;
+    white-space: normal;
+  }
+  .questionnaire-success-actions .button.secondary {
+    flex-basis: 280px;
+  }
+
+  /* Adapt controls to their actual card width, including the staff sidebar. */
+  @container questionnaire-form (max-width: 560px) {
+    .questionnaire-page .availability-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px 12px;
+    }
+    .questionnaire-page .skill-level-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .questionnaire-page {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 752px;
+    gap: 32px;
+  }
+  .questionnaire-intro {
+    margin-top: 24px;
+  }
+  .questionnaire-intro h1 {
+    font-size: 40px;
+    line-height: 48px;
+  }
+  .questionnaire-intro h1 br,
+  .questionnaire-desktop-break {
+    display: none;
+  }
+  .questionnaire-stages {
+    margin-top: 28px;
+  }
+  .questionnaire-stages ol {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .questionnaire-stages li {
+    align-items: flex-start;
+    gap: 12px;
+    padding: 0;
+  }
+  .questionnaire-stages h3 {
+    font-size: 18px;
+    line-height: 26px;
+  }
+  .questionnaire-stage-number {
+    flex-basis: 22px;
+    font-size: 18px;
+    line-height: 26px;
+  }
+  .questionnaire-stages li p {
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .questionnaire-success {
+    margin-block: 24px 48px;
+    gap: 28px;
+  }
+  .questionnaire-success h1 {
+    font-size: 40px;
+    line-height: 48px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .questionnaire-page {
+    grid-template-columns: minmax(0, 0.35fr) minmax(0, 0.65fr);
+    gap: 32px;
+  }
+  .questionnaire-intro {
+    margin-top: 40px;
+  }
+  .questionnaire-intro h1 {
+    font-size: 36px;
+    line-height: 44px;
+  }
+  .questionnaire-intro p:not(.questionnaire-eyebrow) {
+    font-size: 15px;
+    line-height: 24px;
+  }
+  .questionnaire-desktop-break {
+    display: none;
+  }
+  .questionnaire-stages {
+    margin-top: 64px;
+  }
+  .questionnaire-stages h3 {
+    font-size: 20px;
+    line-height: 28px;
+  }
+  .questionnaire-stages li {
+    gap: 16px;
+    padding: 0;
+  }
+  .questionnaire-form-card {
+    padding: 28px;
+  }
+}
+
+/* The staff view has less horizontal space because it sits beside navigation. */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .questionnaire-page.questionnaire-readonly {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 880px;
+    gap: 28px;
+  }
+  .questionnaire-readonly .questionnaire-intro {
+    margin-top: 24px;
+  }
+  .questionnaire-readonly .questionnaire-intro h1 {
+    font-size: 36px;
+    line-height: 44px;
+  }
+  .questionnaire-readonly .questionnaire-save-state {
+    margin-top: 16px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .questionnaire-page:not(.questionnaire-readonly) {
+    gap: clamp(48px, calc(20vw - 208px), 80px);
+  }
+  .questionnaire-intro h1 {
+    font-size: clamp(40px, 3.34vw, 48px);
+    line-height: 1.167;
+  }
+  .questionnaire-readonly .questionnaire-intro h1 {
+    font-size: 40px;
+    line-height: 48px;
+  }
+}
+
+/* Phone questionnaire: controls stay usable without changing the questions. */
+@media (max-width: 767px) {
+  .questionnaire-page,
+  .questionnaire-page.questionnaire-readonly {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    min-width: 0;
+  }
+  .questionnaire-page > *,
+  .questionnaire-page .questionnaire-form-card > *,
+  .questionnaire-success > *,
+  .questionnaire-answer,
+  .questionnaire-answer-skills li,
+  .questionnaire-page .availability-day {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .questionnaire-page,
+  .questionnaire-success {
+    overflow-wrap: anywhere;
+  }
+  .questionnaire-page .questionnaire-journey {
+    position: static;
+  }
+  .questionnaire-page .questionnaire-intro,
+  .questionnaire-page.questionnaire-readonly .questionnaire-intro {
+    margin-top: 20px;
+  }
+  .questionnaire-page .questionnaire-intro h1,
+  .questionnaire-page.questionnaire-readonly .questionnaire-intro h1 {
+    font-size: clamp(28px, 7vw, 36px);
+    line-height: 1.2;
+  }
+  .questionnaire-page .questionnaire-intro h1 br,
+  .questionnaire-page .questionnaire-desktop-break {
+    display: none;
+  }
+  .questionnaire-page .questionnaire-stages {
+    margin-top: 24px;
+  }
+  .questionnaire-page .questionnaire-stages ol {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .questionnaire-page .questionnaire-stages h3 {
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .questionnaire-page .questionnaire-stages li {
+    align-items: flex-start;
+    padding: 0;
+    gap: 12px;
+  }
+  .questionnaire-page .questionnaire-helper {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    column-gap: 16px;
+    row-gap: 4px;
+    align-items: center;
+    margin-top: 24px;
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .questionnaire-page .questionnaire-helper img {
+    grid-row: 1 / 4;
+    width: 56px;
+    height: 56px;
+  }
+  .questionnaire-page .questionnaire-helper h3 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 24px;
+  }
+  .questionnaire-page .questionnaire-helper p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .questionnaire-page .questionnaire-helper > span {
+    font-size: 12px;
+    line-height: 18px;
+    margin-top: 4px;
+  }
+  .questionnaire-page .questionnaire-form-card {
+    padding: 24px 20px;
+    gap: 24px;
+    border-radius: 20px;
+  }
+  .questionnaire-page .questionnaire-form-card > h2 {
+    font-size: 26px;
+    line-height: 34px;
+  }
+  .questionnaire-page .choice-chip,
+  .questionnaire-answer-tags > span {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .questionnaire-page .choice-chip span {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 22px;
+    white-space: normal;
+  }
+  .questionnaire-page .choice-group {
+    gap: 8px;
+  }
+  .questionnaire-page .custom-choice {
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .questionnaire-page .custom-choice input {
+    flex: 1 1 100%;
+    min-height: 48px;
+    font-size: 16px;
+  }
+  .questionnaire-page .custom-choice .button {
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 44px;
+    font-size: 14px;
+    white-space: normal;
+  }
+  .questionnaire-page .skill-level-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .questionnaire-page .skill-level-row label {
+    min-width: 0;
+  }
+  .questionnaire-page .skill-level-row select,
+  .questionnaire-page .field > :is(input, select, textarea),
+  .questionnaire-page .availability-day > input {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 16px;
+  }
+  .questionnaire-page .availability-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px 12px;
+  }
+  .questionnaire-page .availability-day > input {
+    min-height: 48px;
+    padding-inline: 4px;
+  }
+  .questionnaire-page .day-toggle {
+    min-width: 44px;
+  }
+  .questionnaire-page .questionnaire-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .questionnaire-page .questionnaire-actions > * {
+    flex: 0 1 auto;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+  }
+  .questionnaire-page .questionnaire-save-state summary,
+  .questionnaire-page .questionnaire-save-state button {
+    min-height: 44px;
+    max-width: 100%;
+    padding-block: 10px;
+    white-space: normal;
+  }
+  .questionnaire-page .questionnaire-save-state button {
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+  .questionnaire-page .questionnaire-save .check {
+    min-width: 0;
+  }
+  .questionnaire-page .questionnaire-save .check input {
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+  }
+  .questionnaire-page .questionnaire-save .check > span {
+    min-width: 0;
+  }
+  .questionnaire-answer-tags > span {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .questionnaire-success {
+    margin-block: 16px 32px;
+    gap: 24px;
+  }
+  .questionnaire-success h1 {
+    font-size: clamp(28px, 7vw, 36px);
+    line-height: 1.2;
+  }
+  .questionnaire-success-card {
+    padding: 20px;
+  }
+  .questionnaire-success-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .questionnaire-success .questionnaire-success-actions .button {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 359px) {
+  .questionnaire-page .questionnaire-form-card {
+    padding-inline: 16px;
+  }
+  .questionnaire-page .availability-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

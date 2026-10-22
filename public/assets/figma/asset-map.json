@@ -1,0 +1,568 @@
+{
+  "figma_file_key": "6tz99ZYAO9fOXC95W7KGdq",
+  "contexts": {
+    "auth": {
+      "imgFrame": "/assets/figma/eeaae.svg"
+    },
+    "contribution": {
+      "imgFrame": "/assets/figma/aa920.svg",
+      "imgFrame1": "/assets/figma/22169.svg",
+      "imgFrame2": "/assets/figma/416a9.svg",
+      "imgFrame3": "/assets/figma/9dade.svg",
+      "imgFrame4": "/assets/figma/b5b8e.svg",
+      "imgIconBell": "/assets/figma/ad68a.svg",
+      "imgFrame6": "/assets/figma/19625.svg",
+      "imgFrame7": "/assets/figma/bfede.svg",
+      "imgIconCircleCheck": "/assets/figma/e9412.svg",
+      "imgFrame5": "/assets/figma/2650c.svg"
+    },
+    "course-video": {
+      "imgFrame": "/assets/figma/aa920.svg",
+      "img": "/assets/figma/d226a.jpg",
+      "imgFrame1": "/assets/figma/22169.svg",
+      "imgFrame2": "/assets/figma/416a9.svg",
+      "imgFrame3": "/assets/figma/9dade.svg",
+      "imgFrame4": "/assets/figma/b5b8e.svg",
+      "imgIconBell": "/assets/figma/ad68a.svg",
+      "imgFrame6": "/assets/figma/c3748.svg",
+      "imgVector": "/assets/figma/a4559.svg",
+      "imgFrame5": "/assets/figma/2650c.svg"
+    },
+    "course": {
+      "imgFrame": "/assets/figma/aa920.svg",
+      "img": "/assets/figma/d226a.jpg",
+      "imgFrame1": "/assets/figma/22169.svg",
+      "imgFrame2": "/assets/figma/416a9.svg",
+      "imgFrame3": "/assets/figma/9dade.svg",
+      "imgFrame4": "/assets/figma/b5b8e.svg",
+      "imgIconBell": "/assets/figma/ad68a.svg",
+      "imgIconCheck": "/assets/figma/1130d.svg",
+      "imgFrame5": "/assets/figma/2650c.svg"
+    },
+    "dashboard": {
+      "imgFrame": "/assets/figma/aa920.svg",
+      "img": "/assets/figma/56800.jpg",
+      "imgFrame1": "/assets/figma/22169.svg",
+      "imgFrame2": "/assets/figma/416a9.svg",
+      "imgFrame3": "/assets/figma/9dade.svg",
+      "imgFrame4": "/assets/figma/b5b8e.svg",
+      "imgIconBell": "/assets/figma/ad68a.svg",
+      "imgFrame5": "/assets/figma/2650c.svg",
+      "img1": "/assets/figma/0776e.svg"
+    },
+    "event": {
+      "imgFrame": "/assets/figma/aa920.svg",
+      "img1": "/assets/figma/d81aa.jpg",
+      "imgFrame1": "/assets/figma/22169.svg",
+      "imgFrame2": "/assets/figma/416a9.svg",
+      "imgFrame3": "/assets/figma/9dade.svg",
+      "imgFrame4": "/assets/figma/b5b8e.svg",
+      "imgIconBell": "/assets/figma/ad68a.svg",
+      "imgIconCheck": "/assets/figma/4af9f.svg",
+      "imgIconMapPin": "/assets/figma/cc6fc.svg",
+      "imgIconClock3": "/assets/figma/11b27.svg",
+      "imgIconUsers": "/assets/figma/22455.svg",
+      "imgFrame5": "/assets/figma/2650c.svg",
+      "img": "/assets/figma/8c943.svg"
+    },
+    "events": {
+      "imgFrame": "/assets/figma/aa920.svg",
+      "img2": "/assets/figma/d81aa.jpg",
+      "img3": "/assets/figma/56800.jpg",
+      "img4": "/assets/figma/bda09.jpg",
+      "imgFrame1": "/assets/figma/22169.svg",
+      "imgFrame2": "/assets/figma/416a9.svg",
+      "imgFrame3": "/assets/figma/9dade.svg",
+      "imgFrame4": "/assets/figma/b5b8e.svg",
+      "imgIconBell": "/assets/figma/ad68a.svg",
+      "imgIconArrowUpRight": "/assets/figma/098e5.svg",
+      "imgFrame5": "/assets/figma/2650c.svg",
+      "img": "/assets/figma/8c943.svg"
+    },
+    "home": {
+      "imgFrame": "/assets/figma/aa920.svg",
+      "img": "/assets/figma/c1392.jpg",
+      "img3": "/assets/figma/d9006.png",
+      "img4": "/assets/figma/d68ed.png",
+      "img5": "/assets/figma/d81aa.jpg",
+      "img6": "/assets/figma/56800.jpg",
+      "img7": "/assets/figma/bda09.jpg",
+      "imgFrame1": "/assets/figma/eeaae.svg",
+      "img1": "/assets/figma/1f302.svg",
+      "imgFrame2": "/assets/figma/e78ad.svg",
+      "img2": "/assets/figma/19b94.svg",
+      "imgIconArrowUpRight": "/assets/figma/098e5.svg"
+    },
+    "mobile-home": {
+      "img": "/assets/figma/58412.png",
+      "imgFrame": "/assets/figma/7489f.svg",
+      "imgIconMenu": "/assets/figma/36a8e.svg"
+    },
+    "notifications": {
+      "imgFrame": "/assets/figma/aa920.svg",
+      "imgFrame1": "/assets/figma/22169.svg",
+      "imgFrame2": "/assets/figma/416a9.svg",
+      "imgFrame3": "/assets/figma/9dade.svg",
+      "imgFrame4": "/assets/figma/b5b8e.svg",
+      "imgIconBell": "/assets/figma/24929.svg",
+      "imgIconCalendarDays": "/assets/figma/aa759.svg",
+      "imgIconMail": "/assets/figma/0ea77.svg",
+      "imgIconHeartHandshake": "/assets/figma/e10f4.svg",
+      "imgIconCircleCheck": "/assets/figma/4d5d9.svg",
+      "imgFrame5": "/assets/figma/2650c.svg"
+    },
+    "profile": {
+      "imgFrame": "/assets/figma/aa920.svg",
+      "imgFrame1": "/assets/figma/22169.svg",
+      "imgFrame2": "/assets/figma/416a9.svg",
+      "imgFrame3": "/assets/figma/9dade.svg",
+      "imgFrame4": "/assets/figma/b5b8e.svg",
+      "imgChangeImageHere": "/assets/figma/66da3.svg",
+      "imgIconBell": "/assets/figma/ad68a.svg",
+      "imgIconCheck": "/assets/figma/4af9f.svg",
+      "imgIconSparkles": "/assets/figma/5e644.svg",
+      "imgFrame5": "/assets/figma/2650c.svg"
+    },
+    "questionnaire": {
+      "imgFrame": "/assets/figma/eeaae.svg",
+      "imgIconCircleCheck": "/assets/figma/666b9.svg",
+      "img": "/assets/figma/8c943.svg"
+    },
+    "sidebar": {
+      "imgFrame": "/assets/figma/aa920.svg",
+      "imgFrame1": "/assets/figma/22169.svg",
+      "imgFrame2": "/assets/figma/416a9.svg",
+      "imgFrame3": "/assets/figma/9dade.svg",
+      "imgFrame4": "/assets/figma/b5b8e.svg",
+      "imgFrame5": "/assets/figma/2650c.svg",
+      "img": "/assets/figma/8c943.svg"
+    },
+    "training": {
+      "imgFrame": "/assets/figma/aa920.svg",
+      "img": "/assets/figma/d226a.jpg",
+      "img1": "/assets/figma/d81aa.jpg",
+      "imgFrame1": "/assets/figma/22169.svg",
+      "imgFrame2": "/assets/figma/416a9.svg",
+      "imgFrame3": "/assets/figma/9dade.svg",
+      "imgFrame4": "/assets/figma/b5b8e.svg",
+      "imgIconBell": "/assets/figma/ad68a.svg",
+      "imgFrame6": "/assets/figma/72416.svg",
+      "imgFrame5": "/assets/figma/2650c.svg"
+    },
+    "questionnaire-sent": {
+      "img": "/assets/figma/61f8a.svg"
+    }
+  },
+  "aliases": {
+    "logo.svg": "/assets/figma/logo.svg",
+    "logo-sidebar.svg": "/assets/figma/logo-sidebar.svg",
+    "logo-mobile.svg": "/assets/figma/logo-mobile.svg",
+    "home-hero.png": "/assets/figma/home-hero.png",
+    "home-mobile-hero.png": "/assets/figma/home-mobile-hero.png",
+    "brushstroke-hero.png": "/assets/figma/brushstroke-hero.png",
+    "brushstroke-about.png": "/assets/figma/brushstroke-about.png",
+    "hero-photo-transition.svg": "/assets/figma/hero-photo-transition.svg",
+    "hero-text-shade.svg": "/assets/figma/hero-text-shade.svg",
+    "event-1.png": "/assets/figma/event-1.png",
+    "event-2.png": "/assets/figma/event-2.png",
+    "event-3.png": "/assets/figma/event-3.png",
+    "training-photo.png": "/assets/figma/training-photo.png",
+    "icon-arrow-right.svg": "/assets/figma/icon-arrow-right.svg",
+    "icon-arrow-up-right.svg": "/assets/figma/icon-arrow-up-right.svg",
+    "icon-home.svg": "/assets/figma/icon-home.svg",
+    "icon-opportunities.svg": "/assets/figma/icon-opportunities.svg",
+    "icon-training.svg": "/assets/figma/icon-training.svg",
+    "icon-contribution.svg": "/assets/figma/icon-contribution.svg",
+    "icon-bell.svg": "/assets/figma/icon-bell.svg",
+    "icon-check.svg": "/assets/figma/icon-check.svg",
+    "icon-map-pin.svg": "/assets/figma/icon-map-pin.svg",
+    "icon-clock.svg": "/assets/figma/icon-clock.svg",
+    "icon-users.svg": "/assets/figma/icon-users.svg",
+    "icon-menu.svg": "/assets/figma/icon-menu.svg",
+    "home-hero.jpg": "/assets/figma/home-hero.jpg",
+    "event-1.jpg": "/assets/figma/event-1.jpg",
+    "event-2.jpg": "/assets/figma/event-2.jpg",
+    "event-3.jpg": "/assets/figma/event-3.jpg",
+    "training-photo.jpg": "/assets/figma/training-photo.jpg",
+    "kistik.svg": "/assets/figma/kistik.svg",
+    "kistik-nav.svg": "/assets/figma/kistik-nav.svg",
+    "kistik-ready.svg": "/assets/figma/kistik-ready.svg"
+  },
+  "metadata": {
+    "eeaae.svg": {
+      "bytes": 11145,
+      "width": "170",
+      "height": "34",
+      "viewBox": "0 0 170 34",
+      "format": "SVG"
+    },
+    "aa920.svg": {
+      "bytes": 11165,
+      "width": "180",
+      "height": "36",
+      "viewBox": "0 0 180 36",
+      "format": "SVG"
+    },
+    "22169.svg": {
+      "bytes": 1021,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "416a9.svg": {
+      "bytes": 1479,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "9dade.svg": {
+      "bytes": 1087,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "b5b8e.svg": {
+      "bytes": 2521,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "ad68a.svg": {
+      "bytes": 1261,
+      "width": "22",
+      "height": "22",
+      "viewBox": "0 0 22 22",
+      "format": "SVG"
+    },
+    "19625.svg": {
+      "bytes": 314,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "bfede.svg": {
+      "bytes": 681,
+      "width": "18",
+      "height": "18",
+      "viewBox": "0 0 18 18",
+      "format": "SVG"
+    },
+    "e9412.svg": {
+      "bytes": 707,
+      "width": "18",
+      "height": "18",
+      "viewBox": "0 0 18 18",
+      "format": "SVG"
+    },
+    "d226a.png": {
+      "bytes": 316701,
+      "width": 1280,
+      "height": 960,
+      "format": "JPEG",
+      "preferred_path": "/assets/figma/d226a.jpg"
+    },
+    "c3748.svg": {
+      "bytes": 893,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "a4559.svg": {
+      "bytes": 898,
+      "width": "17",
+      "height": "17",
+      "viewBox": "0 0 17 17",
+      "format": "SVG"
+    },
+    "1130d.svg": {
+      "bytes": 319,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "56800.png": {
+      "bytes": 234378,
+      "width": 1280,
+      "height": 960,
+      "format": "JPEG",
+      "preferred_path": "/assets/figma/56800.jpg"
+    },
+    "d81aa.png": {
+      "bytes": 145841,
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG",
+      "preferred_path": "/assets/figma/d81aa.jpg"
+    },
+    "4af9f.svg": {
+      "bytes": 326,
+      "width": "18",
+      "height": "18",
+      "viewBox": "0 0 18 18",
+      "format": "SVG"
+    },
+    "cc6fc.svg": {
+      "bytes": 978,
+      "width": "20",
+      "height": "20",
+      "viewBox": "0 0 20 20",
+      "format": "SVG"
+    },
+    "11b27.svg": {
+      "bytes": 743,
+      "width": "20",
+      "height": "20",
+      "viewBox": "0 0 20 20",
+      "format": "SVG"
+    },
+    "22455.svg": {
+      "bytes": 1338,
+      "width": "20",
+      "height": "20",
+      "viewBox": "0 0 20 20",
+      "format": "SVG"
+    },
+    "bda09.png": {
+      "bytes": 146575,
+      "width": 1280,
+      "height": 853,
+      "format": "JPEG",
+      "preferred_path": "/assets/figma/bda09.jpg"
+    },
+    "098e5.svg": {
+      "bytes": 485,
+      "width": "20",
+      "height": "20",
+      "viewBox": "0 0 20 20",
+      "format": "SVG"
+    },
+    "c1392.png": {
+      "bytes": 415499,
+      "width": 1280,
+      "height": 853,
+      "format": "JPEG",
+      "preferred_path": "/assets/figma/c1392.jpg"
+    },
+    "d9006.png": {
+      "bytes": 19542,
+      "width": 400,
+      "height": 134,
+      "format": "PNG"
+    },
+    "d68ed.png": {
+      "bytes": 58768,
+      "width": 720,
+      "height": 161,
+      "format": "PNG"
+    },
+    "1f302.svg": {
+      "bytes": 990,
+      "width": "1440",
+      "height": "112",
+      "viewBox": "0 0 1440 112",
+      "format": "SVG"
+    },
+    "e78ad.svg": {
+      "bytes": 432,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "19b94.svg": {
+      "bytes": 1013,
+      "width": "1100",
+      "height": "360",
+      "viewBox": "0 0 1100 360",
+      "format": "SVG"
+    },
+    "58412.png": {
+      "bytes": 1680668,
+      "width": 879,
+      "height": 1045,
+      "format": "PNG"
+    },
+    "7489f.svg": {
+      "bytes": 11141,
+      "width": "150",
+      "height": "30",
+      "viewBox": "0 0 150 30",
+      "format": "SVG"
+    },
+    "36a8e.svg": {
+      "bytes": 542,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "24929.svg": {
+      "bytes": 1261,
+      "width": "22",
+      "height": "22",
+      "viewBox": "0 0 22 22",
+      "format": "SVG"
+    },
+    "aa759.svg": {
+      "bytes": 1492,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "0ea77.svg": {
+      "bytes": 643,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "e10f4.svg": {
+      "bytes": 2536,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "4d5d9.svg": {
+      "bytes": 552,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "66da3.svg": {
+      "bytes": 556,
+      "width": "50",
+      "height": "50",
+      "viewBox": "0 0 50 50",
+      "format": "SVG"
+    },
+    "5e644.svg": {
+      "bytes": 2083,
+      "width": "28",
+      "height": "28",
+      "viewBox": "0 0 28 28",
+      "format": "SVG"
+    },
+    "666b9.svg": {
+      "bytes": 768,
+      "width": "20",
+      "height": "20",
+      "viewBox": "0 0 20 20",
+      "format": "SVG"
+    },
+    "72416.svg": {
+      "bytes": 314,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "0776e.svg": {
+      "bytes": 5972,
+      "width": "120",
+      "height": "120",
+      "viewBox": "0 0 120 120",
+      "format": "SVG"
+    },
+    "2650c.svg": {
+      "bytes": 2099,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG"
+    },
+    "61f8a.svg": {
+      "bytes": 6691,
+      "width": "200",
+      "height": "200",
+      "viewBox": "0 0 200 200",
+      "format": "SVG"
+    },
+    "8c943.svg": {
+      "bytes": 6625,
+      "width": "110",
+      "height": "110",
+      "viewBox": "0 0 110 110",
+      "format": "SVG"
+    },
+    "kistik.svg": {
+      "bytes": 5972,
+      "width": "120",
+      "height": "120",
+      "viewBox": "0 0 120 120",
+      "format": "SVG",
+      "source_basename": "0776e.svg"
+    },
+    "kistik-nav.svg": {
+      "bytes": 2099,
+      "width": "24",
+      "height": "24",
+      "viewBox": "0 0 24 24",
+      "format": "SVG",
+      "source_basename": "2650c.svg"
+    },
+    "kistik-ready.svg": {
+      "bytes": 6691,
+      "width": "200",
+      "height": "200",
+      "viewBox": "0 0 200 200",
+      "format": "SVG",
+      "source_basename": "61f8a.svg"
+    }
+  },
+  "excluded": {
+    "event": {
+      "img2": {
+        "source_basename": "d40d0.svg",
+        "reason": "Kistik illustration or assistant-only navigation excluded from redesign"
+      }
+    },
+    "events": {
+      "img1": {
+        "source_basename": "da0da.svg",
+        "reason": "Kistik illustration or assistant-only navigation excluded from redesign"
+      }
+    },
+    "mobile-home": {
+      "img1": {
+        "source_basename": "93335.svg",
+        "reason": "Kistik illustration or assistant-only navigation excluded from redesign"
+      }
+    }
+  },
+  "notes": [
+    "Unmodified original Figma assets; aliases are byte-for-byte copies.",
+    "Some original .png files contain JPEG bytes: use preferred_path or semantic .jpg aliases for correct HTTP Content-Type.",
+    "Preserve SVG root width/height; use context-specific crops and masks.",
+    "Screenshots are design references only, never implementation assets."
+  ],
+  "kistik_sources": {
+    "kistik.svg": {
+      "context": "dashboard",
+      "node_id": "I150:7587;82:1823",
+      "component": "DM/Кистик — Кистик с кистью",
+      "source_basename": "0776e.svg"
+    },
+    "kistik-nav.svg": {
+      "context": "sidebar",
+      "node_id": "I98:2306;56:524;56:293",
+      "component": "DM/Nav — Кистик · помощник",
+      "source_basename": "2650c.svg"
+    },
+    "kistik-ready.svg": {
+      "context": "questionnaire-sent",
+      "node_id": "I98:3826;82:1904",
+      "component": "DM/Кистик — готово",
+      "source_basename": "61f8a.svg"
+    }
+  }
+}

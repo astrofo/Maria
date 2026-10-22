@@ -1,0 +1,13 @@
+**
+!package.json
+!package-lock.json
+!src/
+!src/**
+!sql/
+!sql/**
+!public/
+!public/**
+!deploy/
+!deploy/entrypoint.sh
+!scripts/
+!scripts/demo-cards.js

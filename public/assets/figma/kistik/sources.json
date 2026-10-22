@@ -1,0 +1,36 @@
+{
+  "fileKey": "6tz99ZYAO9fOXC95W7KGdq",
+  "screens": [
+    "98:3453",
+    "98:4140"
+  ],
+  "assets": {
+    "hello.svg": {
+      "node": "I98:3486;82:1823",
+      "source": "f4dcf.svg"
+    },
+    "thinking.svg": {
+      "node": "56:427",
+      "source": "571db.svg"
+    },
+    "send.svg": {
+      "node": "I163:8532;56:353",
+      "source": "77a19.svg"
+    },
+    "check.svg": {
+      "node": "98:3491",
+      "source": "4af9f.svg"
+    },
+    "mobile-hello.svg": {
+      "node": "I98:4151;82:1823",
+      "source": "0732b.svg",
+      "size": 72
+    },
+    "reply-ready.svg": {
+      "node": "I98:4166;82:1904",
+      "source": "a2e72.svg",
+      "size": 36
+    }
+  },
+  "ready": "../kistik-ready.svg — original Figma state ready; see ../asset-map.json"
+}

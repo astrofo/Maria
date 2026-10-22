@@ -1,0 +1,687 @@
+/* Current light Figma handoff, 22 October 2026. */
+.public-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  min-height: 100px;
+  background: var(--bg, #f6f5ef);
+  overflow: visible;
+  gap: 20px;
+}
+.public-account-slot {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 110px;
+}
+.home-page .public-account-slot {
+  width: 208px;
+}
+.public-header .public-nav {
+  position: static;
+  transform: none;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex: 0 1 auto;
+}
+.public-header .public-nav a {
+  white-space: nowrap;
+  font-size: 14px;
+}
+.public-kistik-link {
+  white-space: nowrap;
+  color: var(--green);
+  font-size: 14px;
+  text-decoration: none;
+}
+.public-chat {
+  white-space: nowrap;
+  min-height: 52px;
+}
+.header-join {
+  position: absolute;
+  inset: 0;
+  min-height: 52px;
+  white-space: nowrap;
+}
+.cta-hidden {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+.cta-arriving {
+  visibility: hidden !important;
+}
+.public-header.has-join .public-login {
+  visibility: hidden;
+  pointer-events: none;
+}
+.public-header .public-login {
+  min-height: 52px;
+}
+.cta-flight {
+  box-sizing: border-box;
+  right: auto !important;
+  bottom: auto !important;
+  font-size: 15px !important;
+  line-height: 20px !important;
+  justify-content: center !important;
+  padding: 12px 20px !important;
+}
+.hero-photo-image {
+  object-position: center bottom;
+}
+.event-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: var(--green-light);
+  color: var(--muted);
+  font-size: 14px;
+}
+.event-cover-placeholder svg {
+  width: 44px;
+  height: 44px;
+}
+.layout.organizer-layout .topbar {
+  gap: 24px;
+}
+.organizer-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-left: auto;
+}
+.organizer-top-actions .button {
+  min-height: 38px;
+  padding: 8px 18px;
+  font-size: 13px;
+}
+.sidebar .nav-item {
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+}
+.sidebar .nav-item.active,
+.sidebar .nav-item:hover {
+  background: var(--green-light);
+}
+.sidebar-account-copy {
+  overflow: hidden;
+}
+.sidebar-bottom .button {
+  font-size: 12px;
+  min-height: 28px;
+  padding: 4px 12px;
+}
+.auth-panel {
+  padding-top: 64px;
+  justify-content: flex-start;
+}
+.auth-form {
+  width: 520px;
+  max-width: 100%;
+  padding: 40px;
+}
+.auth-form .section-kicker {
+  margin-bottom: 24px;
+}
+.auth-form h1 {
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 40px;
+}
+.auth-form > .muted {
+  margin-bottom: 24px;
+}
+.auth-form .field {
+  margin-bottom: 24px;
+}
+.auth-form input,
+.registration-card input {
+  min-height: 58px;
+  border-radius: 12px;
+}
+.auth-form .button.submit,
+.registration-card .button.submit {
+  min-height: 52px;
+}
+.auth-form .login-method {
+  margin-top: 24px;
+}
+.auth-form .login-method .button {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 20px;
+  font-size: 15px;
+  color: var(--text);
+}
+.auth-form .auth-switch {
+  margin-top: 24px;
+  padding-top: 24px;
+  text-align: center;
+}
+.auth-form .auth-switch a {
+  color: var(--green);
+  text-decoration: none;
+}
+.password-control {
+  position: relative;
+  margin: 0 0 24px;
+}
+.password-control .field {
+  margin-bottom: 6px;
+}
+.password-toggle {
+  display: block;
+  margin: 0 0 0 auto;
+  background: none;
+  border: 0;
+  padding: 0;
+  min-height: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.password-help {
+  margin: -8px 0 24px;
+  line-height: 1.5;
+}
+.forgot-link {
+  display: block;
+  text-align: center;
+  margin-top: 6px;
+  font-size: 14px;
+  text-decoration: none;
+}
+.recovery-back {
+  display: block;
+  margin-top: 28px;
+  font-size: 14px;
+  text-decoration: none;
+}
+.registration-content {
+  display: grid;
+  grid-template-columns: minmax(0, 448fr) minmax(0, 752fr);
+  gap: 80px;
+  max-width: 1440px;
+  margin: auto;
+  padding: 48px 80px 64px;
+  align-items: start;
+}
+.registration-card {
+  background: white;
+  border-radius: 24px;
+  padding: 32px;
+  min-width: 0;
+}
+.registration-card h2 {
+  font-size: 32px;
+  line-height: 40px;
+  margin: 0 0 24px;
+}
+.registration-card .form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.registration-card .field {
+  margin: 0 0 24px;
+}
+.registration-card .password-control .field {
+  margin-bottom: 6px;
+}
+.registration-card .check {
+  font-size: 14px;
+  line-height: 20px;
+  margin: 24px 0;
+}
+.registration-card .check input {
+  min-height: 22px;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+}
+.registration-card .submit {
+  width: 100%;
+}
+.registration-login {
+  display: block;
+  margin: 24px auto 0;
+  text-align: center;
+  font-size: 14px;
+  text-decoration: none;
+}
+.registration-kistik {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 48px;
+  padding: 16px 24px;
+  background: white;
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 12px;
+}
+.registration-kistik img {
+  flex: none;
+}
+.registration-kistik strong {
+  display: block;
+  color: var(--green);
+  margin-top: 12px;
+  font-size: 14px;
+}
+.questionnaire-journey .questionnaire-intro {
+  margin-top: 32px;
+}
+.questionnaire-journey .questionnaire-stages {
+  margin-top: 32px;
+}
+.questionnaire-journey .questionnaire-stages > h2 {
+  display: none;
+}
+.registration-journey .questionnaire-stages > h2 {
+  display: block;
+}
+.registration-journey .questionnaire-intro {
+  margin-top: 48px;
+}
+.registration-journey .questionnaire-stages {
+  margin-top: 112px;
+}
+.questionnaire-helper {
+  display: block;
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--green-light);
+  border-radius: 24px;
+  color: var(--text);
+  text-decoration: none;
+}
+.questionnaire-helper h3 {
+  font-size: 24px;
+  line-height: 32px;
+  margin: 12px 0;
+}
+.questionnaire-helper p,
+.questionnaire-helper span {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted);
+}
+.questionnaire-helper span {
+  color: var(--green);
+}
+.questionnaire-section-title {
+  margin: 12px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 16px;
+  font-weight: 600;
+}
+.questionnaire-section-title:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border: 0;
+}
+.questionnaire-form-card h2 {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 700;
+}
+.questionnaire-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+}
+.questionnaire-actions > * {
+  flex: 1;
+  min-width: 180px;
+  min-height: 52px;
+}
+.questionnaire-save {
+  padding-top: 24px;
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.questionnaire-save-caption {
+  font-size: 12px;
+}
+.questionnaire-jump {
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  color: var(--green);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.questionnaire-page [id],
+.questionnaire-page fieldset {
+  scroll-margin-top: 124px;
+}
+.profile-editor > h2 {
+  margin-bottom: 24px;
+}
+.profile-editor .form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.profile-editor .field {
+  margin: 0;
+}
+.profile-editor .form-actions {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+  justify-content: flex-start;
+}
+.profile-editor .form-actions .button {
+  min-height: 52px;
+}
+.profile-answer {
+  margin: 18px 0;
+}
+.profile-answer p {
+  margin: 6px 0;
+  line-height: 24px;
+  font-size: 16px;
+}
+.profile-section > .button,
+.profile-security .button {
+  width: 100%;
+  margin-top: 16px;
+}
+.profile-security .pill {
+  margin: 0 0 16px;
+}
+.profile-security p {
+  overflow-wrap: anywhere;
+}
+.profile-security hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+.profile-save-status {
+  min-height: 18px;
+  color: var(--green);
+  margin: 12px 0 0;
+}
+.dialog-header {
+  flex-wrap: nowrap;
+}
+dialog {
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+.account-dialog,
+.discard-dialog {
+  width: min(600px, calc(100vw - 32px));
+  padding: 32px;
+  border-radius: 24px;
+}
+.account-dialog h2,
+.discard-dialog h2 {
+  font-size: 24px;
+  line-height: 32px;
+}
+.account-dialog .password-control {
+  margin-top: 24px;
+}
+.account-dialog .password-control input {
+  min-height: 58px;
+}
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .questionnaire-journey {
+    position: sticky;
+    top: 124px;
+  }
+  .questionnaire-page {
+    grid-template-columns: minmax(0, 448fr) minmax(0, 752fr);
+  }
+  .layout .topbar {
+    position: sticky;
+    top: 0;
+    height: 70px;
+    min-height: 70px;
+    z-index: 35;
+  }
+}
+@media (max-height: 850px) {
+  .questionnaire-journey {
+    position: static;
+  }
+}
+@media (min-width: 768px) and (max-width: 1279px) {
+  .public-header {
+    padding: 16px 24px;
+    gap: 14px;
+    flex-wrap: wrap;
+    min-height: 116px;
+  }
+  .public-header .brand {
+    margin-right: auto;
+  }
+  .public-header .public-nav {
+    order: 5;
+    flex-basis: 100%;
+    justify-content: center;
+    margin: 0;
+  }
+  .public-kistik-link {
+    font-size: 12px;
+  }
+  .public-chat {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  .home-page .public-account-slot {
+    width: 190px;
+  }
+  .registration-content {
+    gap: 40px;
+    padding: 40px 32px 56px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr);
+  }
+  .registration-card {
+    padding: 24px;
+  }
+  .registration-card .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .registration-journey .questionnaire-intro h1 {
+    font-size: 36px;
+    line-height: 44px;
+  }
+  .registration-kistik {
+    padding: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .questionnaire-page {
+    gap: 40px;
+  }
+  .organizer-top-actions {
+    gap: 12px;
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .registration-content {
+    grid-template-columns: 1fr 1.5fr;
+    gap: 24px;
+  }
+  .profile-editor .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .questionnaire-page {
+    grid-template-columns: 1fr;
+  }
+  .questionnaire-journey {
+    position: static;
+  }
+  .questionnaire-journey .questionnaire-stages ol {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: grid;
+  }
+  .questionnaire-helper {
+    display: none;
+  }
+  .public-header .public-kistik-link {
+    display: none;
+  }
+}
+@media (max-width: 767px) {
+  .public-chat,
+  .header-join,
+  .public-header > .public-kistik-link {
+    display: none;
+  }
+  .public-account-slot {
+    display: none;
+  }
+  .registration-content {
+    display: block;
+    padding: 24px;
+  }
+  .registration-journey {
+    display: none;
+  }
+  .registration-card {
+    padding: 24px;
+  }
+  .registration-card .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-editor .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .public-header .public-nav {
+    display: none;
+  }
+}
+
+.event-cover-placeholder {
+  display: grid;
+  place-items: center;
+  background: #e8ede4;
+  color: #456b55;
+  min-height: 180px;
+  font-size: 24px;
+  font-weight: 600;
+}
+.dashboard-cover {
+  width: 100%;
+  height: 224px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+.public-catalog {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 48px 80px;
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  .public-catalog {
+    padding: 32px;
+  }
+}
+
+.org-status {
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.shell-menu-button,
+.shell-close-button,
+.shell-backdrop {
+  display: none;
+}
+.sidebar-bottom > .button {
+  width: 100%;
+  font-size: 13px;
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .layout {
+    display: block;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .layout .main-column {
+    margin-left: 0;
+    width: 100%;
+    min-width: 0;
+  }
+  .layout .sidebar {
+    display: flex;
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 280px;
+    height: 100dvh;
+    z-index: 91;
+    transform: translateX(-100%);
+    visibility: hidden;
+    padding: 24px;
+    overflow-y: auto;
+    background: #fff;
+  }
+  .layout .sidebar .nav-label,
+  .layout .sidebar .sidebar-account-copy,
+  .layout .sidebar .nav-group-label {
+    display: block;
+  }
+  .layout .sidebar .nav-item {
+    justify-content: flex-start;
+  }
+  .layout .sidebar .brand {
+    width: 180px;
+    display: block;
+  }
+  .layout.shell-menu-open .sidebar {
+    transform: none;
+    visibility: visible;
+  }
+  .shell-menu-button,
+  .shell-close-button {
+    display: inline-flex;
+  }
+  .shell-close-button {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+  }
+  .shell-backdrop:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(24, 49, 40, 0.3);
+    border: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .topbar-label {
+    font-size: 11px;
+  }
+  .layout .topbar {
+    padding-inline: 24px;
+    gap: 16px;
+  }
+  body:has(.shell-menu-open) {
+    overflow: hidden;
+  }
+}

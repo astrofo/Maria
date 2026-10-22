@@ -1,0 +1,85 @@
+/* Motion values from the developer handoff. */
+:root {
+  --ui-ease: cubic-bezier(0.2, 0, 0, 1);
+  --state-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes portal-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes portal-dialog {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes account-dialog {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .content:not(.organizer-content) > .page-heading,
+  .auth-form,
+  .registration-card,
+  .questionnaire-form-card {
+    animation: portal-fade 180ms var(--state-ease);
+  }
+  .notification-list,
+  .form-error,
+  .toast:not([hidden]),
+  .profile-save-status {
+    animation: portal-fade 160ms ease-out;
+  }
+  dialog[open] {
+    animation: portal-dialog 160ms var(--ui-ease);
+  }
+  dialog[open]::backdrop {
+    animation: portal-fade 160ms var(--ui-ease);
+  }
+  dialog.account-dialog[open] {
+    animation: account-dialog 200ms var(--ui-ease);
+  }
+  .button,
+  .hero-cta,
+  .nav-item,
+  .choice-chip span,
+  .field input,
+  .field select,
+  .field textarea {
+    transition:
+      background-color 120ms ease-out,
+      border-color 120ms ease-out,
+      color 120ms ease-out;
+  }
+}
+.button:hover,
+.hero-cta:hover {
+  translate: none;
+  transform: none;
+}
+:focus-visible {
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

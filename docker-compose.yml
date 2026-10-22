@@ -1,0 +1,88 @@
+name: deti-marii-local
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-volunteer_portal}
+      POSTGRES_USER: ${POSTGRES_USER:-portal}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run node scripts/configure.mjs --mode local}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  app:
+    build: .
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 40s
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: "3000"
+      UPLOAD_DIR: /app/uploads
+      DATABASE_MODE: postgres
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: ${POSTGRES_USER:-portal}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB:-volunteer_portal}
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET}
+      SESSION_COOKIE_SECURE: "false"
+      TRUST_PROXY: "0"
+      PUBLIC_ORIGIN: http://localhost:3000
+      REGISTRATION_ENABLED: ${REGISTRATION_ENABLED:-true}
+      EMAIL_CODE_MODE: ${EMAIL_CODE_MODE:-random}
+      EMAIL_DEMO_ACCOUNTS: ${EMAIL_DEMO_ACCOUNTS:-}
+      PRIVACY_URL: ${PRIVACY_URL:-}
+      RULES_URL: ${RULES_URL:-}
+      CONSENT_VERSION: ${CONSENT_VERSION:-1}
+      FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-}
+      MAIL_TRANSPORT: ${MAIL_TRANSPORT:-smtp}
+      UNISENDER_GO_API_KEY: ${UNISENDER_GO_API_KEY:-}
+      UNISENDER_GO_FROM_EMAIL: ${UNISENDER_GO_FROM_EMAIL:-}
+      UNISENDER_GO_FROM_NAME: ${UNISENDER_GO_FROM_NAME:-Дети Марии}
+      UNISENDER_GO_BASE_URL: ${UNISENDER_GO_BASE_URL:-https://goapi.unisender.ru/ru/transactional/api/v1}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      DEMO_MODE: "false"
+    volumes:
+      - uploads:/app/uploads
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  pgdata:
+  uploads:

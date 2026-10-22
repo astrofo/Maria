@@ -1,0 +1,26 @@
+# Private server preparation before a public domain is connected.
+# Only db and app are started. HTTP on loopback supports readiness checks;
+# authentication still requires HTTPS because production cookies stay secure.
+name: deti-marii
+services:
+  db:
+    extends:
+      file: compose.production.yml
+      service: db
+  app:
+    extends:
+      file: compose.production.yml
+      service: app
+    environment:
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-https://localhost}
+      TRUST_PROXY: "0"
+    ports:
+      - "127.0.0.1:3000:3000"
+volumes:
+  pgdata:
+  uploads:
+
+networks:
+  default:
+  assistant_internal:
+    internal: true

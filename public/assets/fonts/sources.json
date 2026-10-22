@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/google/fonts",
+  "downloaded_on": "2026-10-21",
+  "files": {
+    "montserrat-variable.ttf": {
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf",
+      "bytes": 744936,
+      "sha256": "0f7b311b2f3279e4eef9b2f968bcdbab6e28f4daeb1f049f4f278a902bcd82f7"
+    },
+    "manrope-variable.ttf": {
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/Manrope%5Bwght%5D.ttf",
+      "bytes": 164700,
+      "sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6"
+    },
+    "Montserrat-OFL.txt": {
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/OFL.txt",
+      "bytes": 4400,
+      "sha256": "8b7141c03fa4f8d44e6345d5d4931709290f0f67875e452e95ac1fd3a027802e"
+    },
+    "Manrope-OFL.txt": {
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/OFL.txt",
+      "bytes": 4387,
+      "sha256": "58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b"
+    },
+    "Montserrat-METADATA.pb": {
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/METADATA.pb",
+      "bytes": 6727,
+      "sha256": "c48dbcaee013b8f6a33e7e6a79191adbf098a36839367d9750598594ff664e5f"
+    },
+    "Manrope-METADATA.pb": {
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/METADATA.pb",
+      "bytes": 732,
+      "sha256": "fb204147a7c16d009d4fa53248b6075bc941d7adfa450a825bc5d4cef2f9ded9"
+    }
+  }
+}
