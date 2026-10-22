@@ -1031,6 +1031,171 @@ test("Current interface works with an isolated local API", async (t) => {
       await ui.waitFor(() => !ui.document.querySelector(".dm-chat-dialog"));
     },
   );
+  await t.test(
+    "only administrators grant achievements and confirmed revocations update volunteer views",
+    async () => {
+      const admin = await login("admin@demo.local");
+      const volunteerId = (await volunteer.api("/me")).user.id;
+      const catalog = (await admin.api("/achievements")).items;
+      assert.equal(catalog.length, 5);
+      await navigate(volunteer, "participation", ".achievement-catalog");
+      assert.equal(
+        volunteer.document.querySelectorAll(".achievement-catalog .is-locked")
+          .length,
+        5,
+      );
+      assert.match(
+        volunteer.document.querySelector("[data-achievements]").textContent,
+        /вручает администратор/,
+      );
+      assert.equal(
+        volunteer.document.querySelector(".achievement-grant-form"),
+        null,
+      );
+      for (const staffUI of [manager, coordinator]) {
+        await navigate(staffUI, `users/${volunteerId}`, ".achievement-empty");
+        assert.equal(
+          staffUI.document.querySelector(".achievement-grant-form"),
+          null,
+        );
+        assert.equal(
+          staffUI.document.querySelector("[data-revoke-achievement]"),
+          null,
+        );
+      }
+      await navigate(admin, `users/${volunteerId}`, ".achievement-grant-form");
+      fill(admin, "achievement_id", catalog[0].id);
+      submit(admin, ".achievement-grant-form");
+      await admin.waitFor("[data-revoke-achievement]");
+      assert.equal((await volunteer.api("/me/achievements")).total, 1);
+      assert.equal(
+        admin.document.querySelector(
+          `.achievement-grant-form option[value="${catalog[0].id}"]`,
+        ),
+        null,
+      );
+      await navigate(volunteer, "profile", "[data-achievements] .is-earned");
+      assert.match(
+        volunteer.document.querySelector("[data-achievements]").textContent,
+        /Первое доброе дело/,
+      );
+      await navigate(
+        volunteer,
+        "participation",
+        ".achievement-catalog .is-earned",
+      );
+      assert.equal(
+        volunteer.document.querySelectorAll(".achievement-catalog .is-earned")
+          .length,
+        1,
+      );
+      assert.equal(
+        volunteer.document.querySelectorAll(".achievement-catalog .is-locked")
+          .length,
+        4,
+      );
+      assert.deepEqual(
+        [
+          ...volunteer.document.querySelectorAll(
+            ".achievement-catalog .achievement-rarity",
+          ),
+        ].map((item) => item.textContent),
+        ["Обычное", "Необычное", "Редкое", "Эпическое", "Легендарное"],
+      );
+      assert.equal(
+        volunteer.document.querySelectorAll("[data-achievements] svg").length,
+        6,
+      );
+      assert.equal(
+        volunteer.document.querySelector("[data-achievements] img"),
+        null,
+      );
+      admin.document.querySelector("[data-revoke-achievement]").click();
+      await admin.waitFor("[data-confirm-revoke]");
+      assert.equal((await volunteer.api("/me/achievements")).total, 1);
+      admin.document.querySelector("[data-cancel-revoke]").click();
+      assert.equal(admin.document.querySelector("[data-confirm-revoke]"), null);
+      assert.equal((await volunteer.api("/me/achievements")).total, 1);
+      admin.document.querySelector("[data-revoke-achievement]").click();
+      admin.document.querySelector("[data-confirm-revoke]").click();
+      await admin.waitFor(".achievement-empty");
+      assert.equal((await volunteer.api("/me/achievements")).total, 0);
+      await navigate(
+        volunteer,
+        "profile",
+        "[data-achievements] .achievement-empty",
+      );
+    },
+  );
+  await t.test(
+    "achievement labels are escaped and an unavailable award service leaves the profile usable",
+    async () => {
+      let unavailable = true;
+      const ui = await login("volunteer@demo.local", {
+        fetchAdapter: async (target, options, send) => {
+          const path = new URL(target).pathname;
+          if (path === "/api/me/achievements" && unavailable)
+            return Response.json(
+              { error: "Не удалось загрузить <script>награды</script>" },
+              { status: 503 },
+            );
+          if (path === "/api/achievements") {
+            const response = await send();
+            const data = await response.json();
+            data.items[0].title = '<img src=x onerror="alert(1)">';
+            data.items[0].description = "<script>untrusted</script>";
+            data.items[0].icon = '<svg onload="alert(1)">';
+            data.items[0].rarity = 'rare" onclick="alert(1)';
+            return Response.json(data);
+          }
+          return send();
+        },
+      });
+      await navigate(ui, "profile", "[data-achievements] .form-error");
+      assert.ok(ui.document.querySelector("#profile-form"));
+      assert.equal(
+        ui.document.querySelector("[data-achievements] script"),
+        null,
+      );
+      assert.match(
+        ui.document.querySelector("[data-achievements] .form-error")
+          .textContent,
+        /<script>/,
+      );
+      unavailable = false;
+      ui.document.querySelector("[data-achievements] button").click();
+      await ui.waitFor("[data-achievements] .achievement-empty");
+      await navigate(ui, "participation", ".achievement-catalog");
+      const collection = ui.document.querySelector(".achievement-catalog");
+      assert.match(collection.textContent, /<img src=x/);
+      assert.equal(
+        collection.querySelector("img,script,[onclick],[onload]"),
+        null,
+      );
+      assert.ok(collection.querySelector(".achievement-common svg path"));
+    },
+  );
+  await t.test("late badge counts do not touch a closed page", async () => {
+    let hold = false;
+    const pending = [];
+    const ui = await login("volunteer@demo.local", {
+      fetchAdapter: async (target, options, send) => {
+        if (hold && new URL(target).pathname.endsWith("/unread-count")) {
+          return new Promise((resolve) =>
+            pending.push(() => resolve(Response.json({ unread: 0 }))),
+          );
+        }
+        return send();
+      },
+    });
+    await ui.window.refreshBadge();
+    hold = true;
+    const refresh = ui.window.refreshBadge();
+    await until(() => pending.length === 2);
+    ui.close();
+    pending.forEach((resolve) => resolve());
+    await refresh;
+  });
   await t.test("no unhandled runtime errors in tested DOM interactions", () => {
     for (const ui of windows)
       assert.deepEqual(

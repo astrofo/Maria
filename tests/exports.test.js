@@ -35,6 +35,18 @@ test("Streaming exports preserve group history, omit credentials and bind ticket
     SELECT 'Volunteer '||n,n||'-'||$1||'@example.test','unusable','+70000000000' FROM generate_series(1,450) n`,
     [randomUUID()],
   );
+  const volunteer = (
+    await database.query(
+      "SELECT id FROM users WHERE role='volunteer' ORDER BY id LIMIT 1",
+    )
+  ).rows[0].id;
+  const achievement = (
+    await database.query("SELECT id FROM achievements WHERE slug='first_event'")
+  ).rows[0].id;
+  await database.query(
+    "INSERT INTO user_achievements(user_id,achievement_id,awarded_by) VALUES($1,$2,$3)",
+    [volunteer, achievement, admin],
+  );
   const event = (
     await database.query(
       "INSERT INTO opportunities(title,description) VALUES('Export fixture','Local test') RETURNING id",
@@ -113,6 +125,10 @@ test("Streaming exports preserve group history, omit credentials and bind ticket
   assert.equal(data.tables.group_messages[0].body, "Exported message");
   assert.equal(data.tables.group_threads.length, 1);
   assert.equal(data.tables.group_reads[0].last_read_id, message);
+  assert.equal(data.tables.achievements.length, 5);
+  assert.equal(data.tables.user_achievements.length, 1);
+  assert.equal(data.tables.user_achievements[0].achievement_id, achievement);
+  assert.equal(data.tables.user_achievements[0].awarded_by, admin);
   assert.ok(
     data.tables.users.every(
       (user) =>

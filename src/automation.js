@@ -1,23 +1,4 @@
-const { id } = require("./validation");
-
 const INTERVAL_MS = 60000;
-const ACHIEVEMENTS = Object.freeze([
-  {
-    key: "first_activity",
-    title: "Первое участие",
-    description: "Первое подтверждённое участие в волонтёрской работе",
-    threshold: 1,
-    unit: "activities",
-  },
-  ...[10, 50, 100].map((hours) => ({
-    key: `${hours}h`,
-    title: `${hours} часов помощи`,
-    description: `${hours} подтверждённых часов волонтёрской работы`,
-    threshold: hours,
-    unit: "hours",
-  })),
-]);
-
 const eventKey = `('event:' || o.id::text || ':' ||
   (EXTRACT(EPOCH FROM o.starts_at) * 1000000)::bigint::text || ':' ||
   CASE WHEN o.starts_at <= NOW() + INTERVAL '2 hours' THEN '2h' ELSE '24h' END ||
@@ -31,7 +12,7 @@ const eventEligibility = `a.status='accepted' AND u.role='volunteer'
   )`;
 
 // Reserve all keys and create their notifications atomically. An already delivered
-// key stays in the ledger even if hours are corrected or a notification is removed.
+// key stays in the ledger even if a notification is removed.
 async function notifyOnce(tx, candidates) {
   const unique = [
     ...new Map(candidates.map((item) => [item.event_key, item])).values(),
@@ -148,64 +129,6 @@ async function remindTasks(tx) {
   );
 }
 
-async function notifyAchievements(tx) {
-  const pending = await tx.query(
-    `SELECT user_id FROM achievement_recheck_queue WHERE check_after<=NOW()
-     ORDER BY check_after,user_id LIMIT 100 FOR UPDATE SKIP LOCKED`,
-  );
-  if (!pending.rows.length) return 0;
-  const userIds = pending.rows.map((row) => row.user_id);
-  const { rows } = await tx.query(
-    `WITH progress AS (
-      SELECT u.id AS user_id,COUNT(*)::int AS activities,SUM(p.hours) AS hours
-      FROM users u JOIN participation p ON p.user_id=u.id
-      WHERE u.id=ANY($1::bigint[]) AND u.role='volunteer' AND u.status<>'closed'
-        AND p.hours>0 AND p.participated_on<=(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::date
-      GROUP BY u.id
-    ), definitions AS (
-      SELECT * FROM (VALUES ('first_activity',1,'activities'),
-        ('10h',10,'hours'),('50h',50,'hours'),('100h',100,'hours')) AS d(key,threshold,unit)
-    )
-    SELECT p.user_id,d.key,('achievement:'||p.user_id::text||':'||d.key) AS event_key
-    FROM progress p CROSS JOIN definitions d
-    WHERE CASE WHEN d.unit='activities' THEN p.activities ELSE p.hours END >= d.threshold
-      AND NOT EXISTS (SELECT 1 FROM automation_ledger l
-        WHERE l.event_key=('achievement:'||p.user_id::text||':'||d.key))
-    ORDER BY p.user_id,d.threshold,d.key`,
-    [userIds],
-  );
-  const delivered = await notifyOnce(
-    tx,
-    rows.map((row) => {
-      const definition = ACHIEVEMENTS.find((item) => item.key === row.key);
-      return {
-        event_key: row.event_key,
-        kind: "achievement",
-        user_id: row.user_id,
-        title: `Новое достижение: ${definition.title}`,
-        body: "Достижение получено по подтверждённым записям участия.",
-      };
-    }),
-  );
-  await tx.query(
-    "DELETE FROM achievement_recheck_queue WHERE user_id=ANY($1::bigint[])",
-    [userIds],
-  );
-  // A future-dated participation becomes eligible at midnight UTC even without
-  // another edit. Recheck only users who actually have such a future record.
-  await tx.query(
-    `INSERT INTO achievement_recheck_queue(user_id,check_after)
-     SELECT p.user_id,MIN(p.participated_on)::timestamp AT TIME ZONE 'UTC'
-     FROM participation p JOIN users u ON u.id=p.user_id
-     WHERE p.user_id=ANY($1::bigint[]) AND u.role='volunteer' AND u.status<>'closed'
-       AND p.hours>0 AND p.participated_on>(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::date
-     GROUP BY p.user_id
-     ON CONFLICT(user_id) DO UPDATE SET check_after=LEAST(achievement_recheck_queue.check_after,EXCLUDED.check_after)`,
-    [userIds],
-  );
-  return delivered;
-}
-
 function safeFailure(error) {
   if (["40001", "40P01", "55P03", "57014"].includes(error?.code))
     return "database_busy";
@@ -243,7 +166,6 @@ async function runAutomation(db) {
       const counts = {
         event_reminders: await remindEvents(tx),
         task_reminders: await remindTasks(tx),
-        achievements: await notifyAchievements(tx),
         expired_sessions: 0,
       };
       const expired = await tx.query(
@@ -312,63 +234,7 @@ function startAutomation({ db, intervalMs = INTERVAL_MS }) {
   };
 }
 
-async function achievementProgress(db, userId) {
-  const { rows } = await db.query(
-    `SELECT u.id,u.role,COUNT(p.id)::int AS activities,COALESCE(SUM(p.hours),0) AS total_hours
-    FROM users u LEFT JOIN participation p ON p.user_id=u.id
-      AND p.hours>0 AND p.participated_on<=(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::date
-    WHERE u.id=$1 GROUP BY u.id,u.role`,
-    [userId],
-  );
-  if (!rows.length) return null;
-  const row = rows[0];
-  const volunteer = row.role === "volunteer";
-  const totalHours = volunteer ? Number(row.total_hours) : 0;
-  const activities = volunteer ? Number(row.activities) : 0;
-  return {
-    role: row.role,
-    data: {
-      user_id: row.id,
-      total_hours: totalHours,
-      activities,
-      items: volunteer
-        ? ACHIEVEMENTS.map((definition) => {
-            const value = definition.unit === "hours" ? totalHours : activities;
-            return {
-              ...definition,
-              progress: Math.min(value, definition.threshold),
-              earned: value >= definition.threshold,
-            };
-          })
-        : [],
-    },
-  };
-}
-
-function registerAutomationRoutes(app, { db, auth, requireRole, wrap }) {
-  app.get(
-    "/api/achievements",
-    auth,
-    wrap(async (req, res) => {
-      const progress = await achievementProgress(db, req.user.id);
-      if (!progress)
-        return res.status(404).json({ error: "Пользователь не найден" });
-      res.set("Cache-Control", "no-store").json(progress.data);
-    }),
-  );
-  app.get(
-    "/api/users/:id/achievements",
-    requireRole("coordinator"),
-    wrap(async (req, res) => {
-      const userId = id.parse(req.params.id);
-      const progress = await achievementProgress(db, userId);
-      if (!progress)
-        return res.status(404).json({ error: "Пользователь не найден" });
-      if (req.user.role === "coordinator" && progress.role !== "volunteer")
-        return res.status(403).json({ error: "Недостаточно прав" });
-      res.set("Cache-Control", "no-store").json(progress.data);
-    }),
-  );
+function registerAutomationRoutes(app, { db, requireRole, wrap }) {
   app.get(
     "/api/admin/automation",
     requireRole("admin"),

@@ -343,7 +343,7 @@ window.PortalOrganizer = (() => {
     if (
       !show(
         set,
-        `${heading(user.full_name, `Профиль ${user.role === "volunteer" ? "волонтёра" : "сотрудника"} · С нами с ${date(user.created_at)}`, user.role === "volunteer" ? action("Добавить задачу", "new-task", `data-user="${id}"`) : "")}<div class="org-breadcrumb">${action("← Волонтёры", "back", 'data-route="users"', true)}${badge(user.status)}</div><div class="org-columns"><div class="org-stack">${profile}${trainingBlock}${participation}${section(
+        `${heading(user.full_name, `Профиль ${user.role === "volunteer" ? "волонтёра" : "сотрудника"} · С нами с ${date(user.created_at)}`, user.role === "volunteer" ? action("Добавить задачу", "new-task", `data-user="${id}"`) : "")}<div class="org-breadcrumb">${action("← Волонтёры", "back", 'data-route="users"', true)}${badge(user.status)}</div><div class="org-columns"><div class="org-stack">${profile}${PortalAchievements.slot("org-card")}${trainingBlock}${participation}${section(
           "Отклики",
           `${
             items(data.applications)
@@ -357,6 +357,14 @@ window.PortalOrganizer = (() => {
       )
     )
       return;
+    PortalAchievements.mount({
+      element: document.querySelector("[data-achievements]"),
+      api,
+      mode: "manage",
+      userId: user.id,
+      canManage: admin(),
+      canGrant: user.role === "volunteer" && user.status !== "closed",
+    });
     if (manager())
       bindForm(document.querySelector("#org-note-form"), async (form) => {
         await write(`/users/${id}/notes`, { body: form.get("body").trim() });

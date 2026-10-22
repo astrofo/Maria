@@ -665,13 +665,6 @@ async function createDemoCards(db = database, env = process.env) {
         ],
       );
     }
-    // The participation trigger queues achievements. Suppress only rows belonging
-    // to accounts created above, before this transaction can become visible.
-    await tx.query(
-      "DELETE FROM achievement_recheck_queue WHERE user_id=ANY($1::bigint[])",
-      [Object.values(people)],
-    );
-
     const enrollments = [
       ["anna", "start", 1],
       ["mikhail", "communication", 3],

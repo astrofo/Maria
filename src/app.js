@@ -27,6 +27,7 @@ const { registerExportRoutes } = require("./exports");
 const { registerOpportunityRoutes } = require("./opportunities");
 const { registerStaffTaskRoutes } = require("./staff-tasks");
 const { registerAutomationRoutes } = require("./automation");
+const { registerAchievementRoutes } = require("./achievements");
 const { registerReportingRoutes } = require("./reporting");
 const { registerCourseRoutes, readLearningSummary } = require("./courses");
 const { registerMessagingRoutes } = require("./messaging");
@@ -169,7 +170,14 @@ function createApp({ db = database, mailer = createMailer() } = {}) {
   );
   // Preflight requests carry no session cookie. Handle them before session storage
   // and authentication, while keeping the same allowlist for actual requests.
-  const corsMethods = new Set(["GET", "HEAD", "POST", "PATCH", "OPTIONS"]);
+  const corsMethods = new Set([
+    "GET",
+    "HEAD",
+    "POST",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+  ]);
   const corsHeaders = new Set(["content-type", "x-csrf-token"]);
   app.use("/api", (req, res, next) => {
     res.set("Cache-Control", "no-store");
@@ -1175,6 +1183,15 @@ function createApp({ db = database, mailer = createMailer() } = {}) {
   });
   registerExportRoutes(app, { db, auth, requireRole, wrap, audit });
   registerStaffTaskRoutes(app, { db, auth, requireRole, wrap, audit, notify });
+  registerAchievementRoutes(app, {
+    db,
+    auth,
+    requireRole,
+    wrap,
+    lockCurrentUser,
+    audit,
+    notify,
+  });
   registerAutomationRoutes(app, { db, auth, requireRole, wrap, audit });
   app.use("/api", (_req, res) =>
     res.status(404).json({ error: "Метод API не найден" }),

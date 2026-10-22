@@ -922,15 +922,18 @@ function renderShell() {
 async function refreshBadge() {
   const user = state.user;
   if (!user) return;
+  const badges = ["unread-badge", "group-unread-badge"].map((id) =>
+    document.getElementById(id),
+  );
   const results = await Promise.allSettled([
     api("/notifications/unread-count"),
     api("/groups/unread-count"),
   ]);
   if (state.user !== user) return;
-  ["unread-badge", "group-unread-badge"].forEach((id, index) => {
-    const result = results[index],
-      badge = document.getElementById(id);
-    if (result.status !== "fulfilled" || !badge) return;
+  // Keep the original nodes: a late count must not touch a replaced shell or closed page.
+  badges.forEach((badge, index) => {
+    const result = results[index];
+    if (result.status !== "fulfilled" || !badge?.isConnected) return;
     const count = number(result.value.unread);
     badge.textContent = count > 99 ? "99+" : count;
     badge.hidden = !count;
@@ -1412,10 +1415,16 @@ async function renderParticipation(set) {
   );
   if (
     !set(
-      `${header(staff() ? "Учёт участия" : "Мой вклад", staff() ? "Подтверждённые часы и история добрых дел команды." : "Встречи, которые уже состоялись, и маленькие шаги, из которых складывается поддержка.", staff() ? button("+ Записать участие", "new-hours") : "")}${contributionTabs("participation")}<div class="stats contribution-stats"><div class="stat"><strong>${hours.toLocaleString("ru-RU")} ч</strong><span>${staff() ? "Участие команды" : "Ваше участие в мероприятиях"}</span><small>Подтверждено координатором</small></div><div class="stat"><strong>${number(data.total)}</strong><span>Тёплые встречи</span><small>В выбранном периоде</small></div><div class="stat"><strong>${Number.isFinite(months) ? months : 0}</strong><span>Месяцев вместе</span><small>Спасибо, что вы с нами</small></div></div><section class="card contribution-history"><div class="section-heading"><h2>История участия</h2></div><form id="participation-filter" class="filters">${periodFields(view)}<button type="submit" class="button secondary">Применить</button></form>${items.length ? `<div class="table-wrap"><table><thead><tr><th>Возможность</th>${staff() ? "<th>Волонтёр</th>" : ""}<th>Дата</th><th>Часы</th><th>Статус</th>${staff() ? "<th>Действия</th>" : ""}</tr></thead><tbody>${items.map((item) => `<tr><td class="description-cell"><strong>${h(item.title || item.opportunity_title)}</strong>${item.note ? `<div class="muted preserve">${h(item.note)}</div>` : ""}</td>${staff() ? `<td class="content-cell"><a href="#users/${item.user_id}">${h(item.full_name)}</a></td>` : ""}<td>${date(item.participated_on)}</td><td><strong>${number(item.hours).toLocaleString("ru-RU")} ч</strong></td><td><span class="confirmed-status">${icon("confirmed")} Подтверждено</span></td>${staff() ? `<td>${button("Исправить", "edit-hours", `data-id="${item.id}"`, true)}</td>` : ""}</tr>`).join("")}</tbody></table></div><div class="contribution-total"><strong>Итого за выбранный период</strong><span>${hours.toLocaleString("ru-RU")} ч · Участий: ${number(data.total)}</span></div>` : empty("История начинается с первой встречи", "После участия координатор добавит сюда ваши часы.")}${pagination(data, "participation")}</section><div class="contribution-bottom">${gratitude ? `<article class="card gratitude-card"><p class="section-kicker">СЛОВА БЛАГОДАРНОСТИ</p><h2 class="preserve">${h(gratitude.message || gratitude.body)}</h2><p>${h(gratitude.author_name || gratitude.sender_name || "Команда «Детей Марии»")}</p><a href="#thanks">Все благодарности →</a></article>` : ""}<article class="card"><p class="section-kicker">ВМЕСТЕ С КОМАНДОЙ</p><h2>Каждая встреча — часть вашей истории</h2><p class="muted">Новые знакомства, общие дела и тёплые встречи команды.</p><a class="text-link" href="#opportunities">Выбрать следующую возможность →</a></article></div>`,
+      `${header(staff() ? "Учёт участия" : "Мой вклад", staff() ? "Подтверждённые часы и история добрых дел команды." : "Встречи, которые уже состоялись, и маленькие шаги, из которых складывается поддержка.", staff() ? button("+ Записать участие", "new-hours") : "")}${contributionTabs("participation")}<div class="stats contribution-stats"><div class="stat"><strong>${hours.toLocaleString("ru-RU")} ч</strong><span>${staff() ? "Участие команды" : "Ваше участие в мероприятиях"}</span><small>Подтверждено координатором</small></div><div class="stat"><strong>${number(data.total)}</strong><span>Тёплые встречи</span><small>В выбранном периоде</small></div><div class="stat"><strong>${Number.isFinite(months) ? months : 0}</strong><span>Месяцев вместе</span><small>Спасибо, что вы с нами</small></div></div>${!staff() ? PortalAchievements.slot() : ""}<section class="card contribution-history"><div class="section-heading"><h2>История участия</h2></div><form id="participation-filter" class="filters">${periodFields(view)}<button type="submit" class="button secondary">Применить</button></form>${items.length ? `<div class="table-wrap"><table><thead><tr><th>Возможность</th>${staff() ? "<th>Волонтёр</th>" : ""}<th>Дата</th><th>Часы</th><th>Статус</th>${staff() ? "<th>Действия</th>" : ""}</tr></thead><tbody>${items.map((item) => `<tr><td class="description-cell"><strong>${h(item.title || item.opportunity_title)}</strong>${item.note ? `<div class="muted preserve">${h(item.note)}</div>` : ""}</td>${staff() ? `<td class="content-cell"><a href="#users/${item.user_id}">${h(item.full_name)}</a></td>` : ""}<td>${date(item.participated_on)}</td><td><strong>${number(item.hours).toLocaleString("ru-RU")} ч</strong></td><td><span class="confirmed-status">${icon("confirmed")} Подтверждено</span></td>${staff() ? `<td>${button("Исправить", "edit-hours", `data-id="${item.id}"`, true)}</td>` : ""}</tr>`).join("")}</tbody></table></div><div class="contribution-total"><strong>Итого за выбранный период</strong><span>${hours.toLocaleString("ru-RU")} ч · Участий: ${number(data.total)}</span></div>` : empty("История начинается с первой встречи", "После участия координатор добавит сюда ваши часы.")}${pagination(data, "participation")}</section><div class="contribution-bottom">${gratitude ? `<article class="card gratitude-card"><p class="section-kicker">СЛОВА БЛАГОДАРНОСТИ</p><h2 class="preserve">${h(gratitude.message || gratitude.body)}</h2><p>${h(gratitude.author_name || gratitude.sender_name || "Команда «Детей Марии»")}</p><a href="#thanks">Все благодарности →</a></article>` : ""}<article class="card"><p class="section-kicker">ВМЕСТЕ С КОМАНДОЙ</p><h2>Каждая встреча — часть вашей истории</h2><p class="muted">Новые знакомства, общие дела и тёплые встречи команды.</p><a class="text-link" href="#opportunities">Выбрать следующую возможность →</a></article></div>`,
     )
   )
     return;
+  if (!staff())
+    PortalAchievements.mount({
+      element: document.querySelector("[data-achievements]"),
+      api,
+      mode: "collection",
+    });
   bindListFilter("#participation-filter", "participation", [
     "date_from",
     "date_to",

@@ -243,8 +243,10 @@ export function createApiClient({
 
   async function request(path, options = {}) {
     const method = String(options.method || "GET").toUpperCase();
-    if (!["GET", "HEAD", "POST", "PATCH"].includes(method)) {
-      throw new TypeError("This API client supports GET, HEAD, POST and PATCH");
+    if (!["GET", "HEAD", "POST", "PATCH", "DELETE"].includes(method)) {
+      throw new TypeError(
+        "This API client supports GET, HEAD, POST, PATCH and DELETE",
+      );
     }
     if (["GET", "HEAD"].includes(method) && options.body !== undefined) {
       throw new TypeError("GET/HEAD requests do not accept a JSON body");
@@ -481,7 +483,22 @@ export function createApiClient({
       create: (fields) => post("/staff-tasks", fields),
       update: (id, fields) => patch(`/staff-tasks/${idPath(id)}`, fields),
     },
-    achievements: { get: () => get("/achievements") },
+    achievements: {
+      get: () => get("/achievements"),
+      mine: () => get("/me/achievements"),
+      forUser: (userId) => get(`/users/${idPath(userId)}/achievements`),
+      award: (userId, achievementId) =>
+        post(`/users/${idPath(userId)}/achievements`, {
+          achievement_id: Number(idPath(achievementId)),
+        }),
+      revoke: (userId, achievementId) =>
+        request(
+          `/users/${idPath(userId)}/achievements/${idPath(achievementId)}`,
+          {
+            method: "DELETE",
+          },
+        ),
+    },
     audit: {
       list: (filters = {}) =>
         get(
