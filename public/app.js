@@ -328,6 +328,18 @@ function showFormError(form, error) {
     action.append(registrationLink);
     errorBox.append(action);
   }
+  if (
+    error.code === "required_course_incomplete" &&
+    /^\d+$/.test(String(error.response?.required_course_id))
+  ) {
+    const courseLink = document.createElement("a");
+    courseLink.className = "text-link";
+    courseLink.href = `#training/course/${error.response.required_course_id}`;
+    courseLink.textContent = "Открыть обязательный курс →";
+    const action = document.createElement("p");
+    action.append(courseLink);
+    errorBox.append(action);
+  }
   errorBox.scrollIntoView({ block: "nearest" });
 }
 function restoreLoginError(form) {
@@ -387,6 +399,7 @@ function navigate(route) {
 }
 function clearModuleState() {
   window.DMMessaging?.destroy();
+  window.PortalCommunity?.destroy();
   window.PortalOrganizer?.reset();
   window.PortalCourses?.reset?.();
   window.PortalKistik?.reset();
@@ -876,7 +889,7 @@ function renderShell() {
         ["organizer-events", "Мероприятия"],
         ["training", "Курсы"],
         ["staff-tasks", "Задачи"],
-        ...(manager() ? [["messages", "Сообщения"]] : [["chat", "Сообщения"]]),
+        ["groups", "Сообщения"],
         ["kistik", "Кистик"],
       ]
     : [
@@ -884,7 +897,7 @@ function renderShell() {
         ["opportunities", "Возможности"],
         ["training", "Обучение"],
         ["participation", "Мой вклад"],
-        ["chat", "Сообщения"],
+        ["groups", "Сообщения"],
         ["kistik", "Кистик"],
       ];
   const workNav = [],
@@ -898,7 +911,7 @@ function renderShell() {
     items
       .map(
         ([key, title]) =>
-          `<${key === "chat" ? 'button type="button" data-action="open-chat"' : "a"} class="nav-item ${route === key ? "active" : ""}" ${key === "chat" ? "" : `href="#${key}"`} aria-label="${h(title)}" title="${h(title)}" ${route === key ? 'aria-current="page"' : ""}>${icon(key === "chat" ? "messages" : key === "organizer-events" ? "opportunities" : key === "campaigns" ? "notifications" : key)}<span class="nav-label">${title}</span></${key === "chat" ? "button" : "a"}>`,
+          `<${key === "chat" ? 'button type="button" data-action="open-chat"' : "a"} class="nav-item ${route === key ? "active" : ""}" ${key === "chat" ? "" : `href="#${key}"`} aria-label="${h(title)}" title="${h(title)}" ${route === key ? 'aria-current="page"' : ""}>${icon(key === "chat" || key === "groups" ? "messages" : key === "organizer-events" ? "opportunities" : key === "campaigns" ? "notifications" : key)}<span class="nav-label">${title}</span>${key === "groups" ? '<span id="group-unread-badge" class="pill" hidden></span>' : ""}</${key === "chat" ? "button" : "a"}>`,
       )
       .join("");
   app.innerHTML = `<div class="layout ${staff() ? "organizer-layout" : ""}"><button class="shell-backdrop" type="button" data-action="shell-menu" aria-label="Закрыть меню" hidden></button><aside class="sidebar" id="sidebar"><button class="close-button shell-close-button" type="button" data-action="shell-menu" aria-label="Закрыть меню">×</button><div class="sidebar-main">${brand()}<nav aria-label="Разделы кабинета">${nav(mainNav)}${workNav.length ? `<div class="nav-group-label">Моё участие</div>${nav(workNav)}` : ""}${extraNav.length ? `<div class="nav-group-label">УПРАВЛЕНИЕ</div>${nav(extraNav)}` : ""}</nav></div><div class="sidebar-bottom"><a class="sidebar-account" href="#profile" aria-label="Мой профиль" title="Мой профиль"><span class="avatar" aria-hidden="true">${h(initials(state.user.full_name))}</span><span class="sidebar-account-copy"><span class="account-name">${h(state.user.full_name)}</span><span class="account-role">Мой профиль</span></span></a><button class="button ghost compact" type="button" data-action="logout">Выйти</button></div></aside><div class="main-column"><header class="topbar"><button class="button secondary shell-menu-button" type="button" aria-label="Открыть меню кабинета" aria-controls="sidebar" aria-expanded="false" data-action="shell-menu">${icon("menu")}</button><span class="topbar-label">${demoEmailAccount() ? "ТЕСТОВЫЙ АККАУНТ" : staff() ? "ПРОСТРАНСТВО ОРГАНИЗАТОРА" : "ПРОСТРАНСТВО ВОЛОНТЁРА"}</span><div class="organizer-top-actions"><a class="notification-link ${route === "notifications" ? "active" : ""}" href="#notifications" aria-label="Уведомления">${icon(route === "notifications" ? "notificationsActive" : "notifications")}<span id="unread-badge" class="badge-count" hidden></span></a></div></header>${demoAccessNotice()}<main id="content" class="content ${staff() ? "organizer-content" : ""}" tabindex="-1"></main></div></div>`;
@@ -909,19 +922,21 @@ function renderShell() {
 async function refreshBadge() {
   const user = state.user;
   if (!user) return;
-  try {
-    const data = await api("/notifications/unread-count");
-    if (state.user !== user) return;
-    const count = number(data.unread);
-    const badge = document.querySelector("#unread-badge");
-    if (badge) {
-      badge.textContent = count > 99 ? "99+" : count;
-      badge.hidden = !count;
-    }
-  } catch {
-    /* The notifications page provides a retry if the service fails. */
-  }
+  const results = await Promise.allSettled([
+    api("/notifications/unread-count"),
+    api("/groups/unread-count"),
+  ]);
+  if (state.user !== user) return;
+  ["unread-badge", "group-unread-badge"].forEach((id, index) => {
+    const result = results[index],
+      badge = document.getElementById(id);
+    if (result.status !== "fulfilled" || !badge) return;
+    const count = number(result.value.unread);
+    badge.textContent = count > 99 ? "99+" : count;
+    badge.hidden = !count;
+  });
 }
+
 async function renderRoute() {
   const requested =
     location.hash.slice(1) || (state.user ? "dashboard" : "home");
@@ -969,10 +984,17 @@ async function renderRoute() {
           opportunities: "organizer-events",
           "event-editor": "organizer-events",
           "event-announcement": "organizer-events",
-          campaigns: "messages",
+          campaigns: "groups",
+          messages: "groups",
+          "event-chat": "groups",
+          "questionnaire-import": "users",
           questionnaire: id ? "users" : "profile",
         }[route] || route
-      : route;
+      : route === "event-chat"
+        ? "groups"
+        : route === "applications"
+          ? "participation"
+          : route;
     const current = link.getAttribute("href") === `#${activeRoute}`;
     link.classList.toggle("active", current);
     if (current) link.setAttribute("aria-current", "page");
@@ -1016,6 +1038,16 @@ async function renderRoute() {
         write,
         toast,
         route: requested,
+      });
+    else if (route === "questionnaire-import" && manager())
+      await PortalImports.render({ set, api, user: state.user });
+    else if (["groups", "event-chat"].includes(route))
+      await PortalCommunity.render({
+        set,
+        api,
+        user: state.user,
+        groupId: route === "groups" ? id : null,
+        eventId: route === "event-chat" ? id : null,
       });
     else if (route === "messages" && manager())
       await DMMessaging.renderInbox(set, {
@@ -1171,7 +1203,7 @@ async function renderOpportunities(set, id) {
       : "";
     if (
       !set(
-        `${header(event.title, "Творчество — хороший повод познакомиться. Приходите помогать и создавать вместе.", staff() ? button("Редактировать", "edit-event", `data-id="${event.id}"`, true) : "")}<a class="back-link" href="#opportunities">← Все возможности</a>${event.archived_at ? '<div class="card" role="status"><strong>Мероприятие удалено из каталога</strong><p>Эта карточка сохранена в истории вашего отклика. Новые заявки не принимаются.</p></div>' : ""}<div class="event-detail-layout"><article class="event-detail-main">${eventImage(event, "event-detail-photo")}<div class="tags">${statusPill(event.status)}${tags(event.skills)}${event.my_application ? statusPill(event.my_application) : ""}</div><section><h2>Что будем делать</h2><p class="preserve muted">${h(event.description)}</p></section><section class="event-preparation"><h2>Перед первой встречей</h2><p class="preserve muted">${h(event.preparation || "Познакомьтесь с вводными материалами. Координатор расскажет о вашей роли и особенностях группы.")}</p>${event.required_course_id ? `<a class="text-link" href="#training/course/${event.required_course_id}">${h(event.required_course_title || "Курс подготовки")} →</a><p class="muted small">Прохождение курса не подтверждает заявку автоматически.</p>` : '<a class="text-link" href="#training">Перейти к обучению →</a>'}</section></article><aside class="card event-booking"><p class="section-kicker">ВСТРЕЧА</p><h2>${event.starts_at ? date(event.starts_at) : "Уточняем дату"}</h2><p>${event.starts_at ? date(event.starts_at, true) : "Координатор сообщит время"}</p><div class="event-facts">${event.coordinator_name ? `<p><span>Координатор: ${h(event.coordinator_name)}</span></p>` : ""}${event.application_deadline ? `<p><span>Приём заявок до ${date(event.application_deadline, true)}</span></p>` : ""}<p>${icon("location")}<span>${h([event.city, event.location].filter(Boolean).join(" · ") || "Место уточняется")}</span></p><p>${icon("clock")}<span>${h(eventDuration(event))}</span></p><p>${icon("team")}<span>${event.capacity ? `Мест: ${number(event.capacity)}${state.user ? ` · подтверждено: ${number(event.accepted_count)}` : ""}` : "Команда и координатор"}</span></p>${event.ends_at ? `<p><span>Окончание: ${date(event.ends_at, true)}</span></p>` : ""}</div>${list(event.interests).length ? `<div class="tags">${tags(event.interests)}</div>` : ""}<div class="event-apply">${staff() ? `<a class="button secondary" href="#applications">Открыть отклики</a>` : applyButton(event)}<p class="muted small">${event.my_application ? "Статус участия отображается в разделе «Мои отклики»." : "После отклика координатор подтвердит участие и расскажет детали."}</p></div></aside></div>${roster}`,
+        `${header(event.title, "Творчество — хороший повод познакомиться. Приходите помогать и создавать вместе.", staff() ? button("Редактировать", "edit-event", `data-id="${event.id}"`, true) : "")}<a class="back-link" href="#opportunities">← Все возможности</a>${event.archived_at ? '<div class="card" role="status"><strong>Мероприятие удалено из каталога</strong><p>Эта карточка сохранена в истории вашего отклика. Новые заявки не принимаются.</p></div>' : ""}<div class="event-detail-layout"><article class="event-detail-main">${eventImage(event, "event-detail-photo")}<div class="tags">${statusPill(event.status)}${tags(event.skills)}${event.my_application ? statusPill(event.my_application) : ""}</div><section><h2>Что будем делать</h2><p class="preserve muted">${h(event.description)}</p></section><section class="event-preparation"><h2>Перед первой встречей</h2><p class="preserve muted">${h(event.preparation || "Познакомьтесь с вводными материалами. Координатор расскажет о вашей роли и особенностях группы.")}</p>${event.required_course_id ? `<a class="text-link" href="#training/course/${event.required_course_id}">${h(event.required_course_title || "Курс подготовки")} →</a><p class="muted small">Прохождение курса не подтверждает заявку автоматически.</p>` : '<a class="text-link" href="#training">Перейти к обучению →</a>'}</section></article><aside class="card event-booking"><p class="section-kicker">ВСТРЕЧА</p><h2>${event.starts_at ? date(event.starts_at) : "Уточняем дату"}</h2><p>${event.starts_at ? date(event.starts_at, true) : "Координатор сообщит время"}</p><div class="event-facts">${event.coordinator_name ? `<p><span>Координатор: ${h(event.coordinator_name)}</span></p>` : ""}${event.application_deadline ? `<p><span>Приём заявок до ${date(event.application_deadline, true)}</span></p>` : ""}<p>${icon("location")}<span>${h([event.city, event.location].filter(Boolean).join(" · ") || "Место уточняется")}</span></p><p>${icon("clock")}<span>${h(eventDuration(event))}</span></p><p>${icon("team")}<span>${event.capacity ? `Мест: ${number(event.capacity)}${state.user ? ` · подтверждено: ${number(event.accepted_count)}` : ""}` : "Команда и координатор"}</span></p>${event.ends_at ? `<p><span>Окончание: ${date(event.ends_at, true)}</span></p>` : ""}</div>${list(event.interests).length ? `<div class="tags">${tags(event.interests)}</div>` : ""}<div class="event-apply">${staff() ? `<a class="button secondary" href="#applications">Открыть отклики</a>` : applyButton(event)}<p class="muted small">${event.my_application ? "Статус участия доступен в разделе «Мой вклад»." : "После отклика координатор подтвердит участие и расскажет детали."}</p></div></aside></div>${event.my_application === "accepted" ? `<p><a class="button secondary" href="#event-chat/${h(event.id)}">Чат участников встречи</a></p>` : ""}${roster}`,
       )
     )
       return;
@@ -1267,6 +1299,11 @@ async function renderOpportunities(set, id) {
     });
 }
 
+function contributionTabs(active) {
+  return staff()
+    ? ""
+    : `<nav class="dm-tabs" aria-label="Мой вклад"><a class="dm-chip ${active === "participation" ? "selected" : ""}" href="#participation" ${active === "participation" ? 'aria-current="page"' : ""}>Мой вклад</a><a class="dm-chip ${active === "applications" ? "selected" : ""}" href="#applications" ${active === "applications" ? 'aria-current="page"' : ""}>Мои отклики</a></nav>`;
+}
 function applyButton(event) {
   if (event.archived_at) return '<span class="pill">Мероприятие удалено</span>';
   if (event.my_application && event.my_application !== "withdrawn")
@@ -1282,6 +1319,16 @@ function applyButton(event) {
       : statusPill(event.status);
   if (event.my_application && event.my_application !== "withdrawn")
     return statusPill(event.my_application);
+  if (
+    event.status === "open" &&
+    event.training_requirement &&
+    !event.training_requirement.completed
+  ) {
+    const requirement = event.training_requirement;
+    return requirement.available
+      ? `<p>Перед откликом пройдите курс «${h(event.required_course_title || "Подготовка к встрече")}».</p><a class="button" href="#training/course/${h(requirement.course_id)}">Пройти обязательный курс</a>`
+      : '<p class="notice">Обязательный курс сейчас недоступен. Свяжитесь с координатором.</p>';
+  }
   return event.status === "open"
     ? button("Хочу участвовать", "apply", `data-id="${event.id}"`)
     : "";
@@ -1302,7 +1349,7 @@ async function renderApplications(set) {
   const items = pageItems(data);
   if (
     !set(
-      `${header(staff() ? "Отклики волонтёров" : "Мои отклики", staff() ? "Подтверждайте участие и помогайте волонтёрам найти своё дело." : "Следите за рассмотрением заявок и готовьтесь к событиям.")}<form id="applications-filter" class="filters">${select("Статус", "status", applicationStatuses, view.status || "")}${periodFields(view)}<button type="submit" class="button secondary">Применить</button></form>${items.length ? `<div class="table-wrap"><table><thead><tr>${staff() ? "<th>Волонтёр</th>" : ""}<th>Событие</th><th>Дата отклика</th><th>Статус</th><th>Действия</th></tr></thead><tbody>${items.map((item) => `<tr>${staff() ? `<td class="content-cell"><a href="#users/${item.user_id}">${h(item.full_name)}</a><div class="muted">${h(item.email)}</div></td>` : ""}<td class="description-cell"><a href="#opportunities/${item.opportunity_id}">${h(item.opportunity_title || item.title)}</a>${item.opportunity_archived_at ? '<span class="pill">Удалено из каталога</span>' : ""}${item.note ? `<div class="muted preserve">${h(item.note)}</div>` : ""}</td><td>${date(item.created_at)}</td><td>${statusPill(item.status)}</td><td><div class="actions">${staff() && !item.opportunity_archived_at && item.status === "pending" ? `${button("Принять", "application-status", `data-id="${item.id}" data-status="accepted"`)}${button("Отклонить", "application-status", `data-id="${item.id}" data-status="rejected"`, true)}` : ""}${staff() && item.status === "accepted" ? button("Записать часы", "event-hours", `data-event="${item.opportunity_id}" data-user="${item.user_id}"`, true) : ""}${!staff() && ["pending", "accepted"].includes(item.status) ? button("Отозвать", "application-status", `data-id="${item.id}" data-status="withdrawn"`, true) : ""}${!["pending", "accepted"].includes(item.status) ? '<span class="muted">—</span>' : ""}</div></td></tr>`).join("")}</tbody></table></div>` : empty("Откликов не найдено", "Измените фильтры или выберите событие в разделе «Возможности».")}${pagination(data, "applications")}`,
+      `${header(staff() ? "Отклики волонтёров" : "Мои отклики", staff() ? "Подтверждайте участие и помогайте волонтёрам найти своё дело." : "Следите за рассмотрением заявок и готовьтесь к событиям.")}${contributionTabs("applications")}<form id="applications-filter" class="filters">${select("Статус", "status", applicationStatuses, view.status || "")}${periodFields(view)}<button type="submit" class="button secondary">Применить</button></form>${items.length ? `<div class="table-wrap"><table><thead><tr>${staff() ? "<th>Волонтёр</th>" : ""}<th>Событие</th><th>Дата отклика</th><th>Статус</th><th>Действия</th></tr></thead><tbody>${items.map((item) => `<tr>${staff() ? `<td class="content-cell"><a href="#users/${item.user_id}">${h(item.full_name)}</a><div class="muted">${h(item.email)}</div></td>` : ""}<td class="description-cell"><a href="#opportunities/${item.opportunity_id}">${h(item.opportunity_title || item.title)}</a>${item.opportunity_archived_at ? '<span class="pill">Удалено из каталога</span>' : ""}${item.note ? `<div class="muted preserve">${h(item.note)}</div>` : ""}</td><td>${date(item.created_at)}</td><td>${statusPill(item.status)}</td><td><div class="actions">${staff() && !item.opportunity_archived_at && item.status === "pending" ? `${button("Принять", "application-status", `data-id="${item.id}" data-status="accepted"`)}${button("Отклонить", "application-status", `data-id="${item.id}" data-status="rejected"`, true)}` : ""}${staff() && item.status === "accepted" ? button("Записать часы", "event-hours", `data-event="${item.opportunity_id}" data-user="${item.user_id}"`, true) : ""}${!staff() && ["pending", "accepted"].includes(item.status) ? button("Отозвать", "application-status", `data-id="${item.id}" data-status="withdrawn"`, true) : ""}${!["pending", "accepted"].includes(item.status) ? '<span class="muted">—</span>' : ""}</div></td></tr>`).join("")}</tbody></table></div>` : empty("Откликов не найдено", "Измените фильтры или выберите событие в разделе «Возможности».")}${pagination(data, "applications")}`,
     )
   )
     return;
@@ -1365,7 +1412,7 @@ async function renderParticipation(set) {
   );
   if (
     !set(
-      `${header(staff() ? "Учёт участия" : "Ваше время имеет значение", staff() ? "Подтверждённые часы и история добрых дел команды." : "Встречи, которые уже состоялись, и маленькие шаги, из которых складывается поддержка.", staff() ? button("+ Записать участие", "new-hours") : "")}<div class="stats contribution-stats"><div class="stat"><strong>${hours.toLocaleString("ru-RU")} ч</strong><span>${staff() ? "Участие команды" : "Ваше участие в мероприятиях"}</span><small>Подтверждено координатором</small></div><div class="stat"><strong>${number(data.total)}</strong><span>Тёплые встречи</span><small>В выбранном периоде</small></div><div class="stat"><strong>${Number.isFinite(months) ? months : 0}</strong><span>Месяцев вместе</span><small>Спасибо, что вы с нами</small></div></div><section class="card contribution-history"><div class="section-heading"><h2>История участия</h2></div><form id="participation-filter" class="filters">${periodFields(view)}<button type="submit" class="button secondary">Применить</button></form>${items.length ? `<div class="table-wrap"><table><thead><tr><th>Возможность</th>${staff() ? "<th>Волонтёр</th>" : ""}<th>Дата</th><th>Часы</th><th>Статус</th>${staff() ? "<th>Действия</th>" : ""}</tr></thead><tbody>${items.map((item) => `<tr><td class="description-cell"><strong>${h(item.title || item.opportunity_title)}</strong>${item.note ? `<div class="muted preserve">${h(item.note)}</div>` : ""}</td>${staff() ? `<td class="content-cell"><a href="#users/${item.user_id}">${h(item.full_name)}</a></td>` : ""}<td>${date(item.participated_on)}</td><td><strong>${number(item.hours).toLocaleString("ru-RU")} ч</strong></td><td><span class="confirmed-status">${icon("confirmed")} Подтверждено</span></td>${staff() ? `<td>${button("Исправить", "edit-hours", `data-id="${item.id}"`, true)}</td>` : ""}</tr>`).join("")}</tbody></table></div><div class="contribution-total"><strong>Итого за выбранный период</strong><span>${hours.toLocaleString("ru-RU")} ч · Участий: ${number(data.total)}</span></div>` : empty("История начинается с первой встречи", "После участия координатор добавит сюда ваши часы.")}${pagination(data, "participation")}</section><div class="contribution-bottom">${gratitude ? `<article class="card gratitude-card"><p class="section-kicker">СЛОВА БЛАГОДАРНОСТИ</p><h2 class="preserve">${h(gratitude.message || gratitude.body)}</h2><p>${h(gratitude.author_name || gratitude.sender_name || "Команда «Детей Марии»")}</p><a href="#thanks">Все благодарности →</a></article>` : ""}<article class="card"><p class="section-kicker">ВМЕСТЕ С КОМАНДОЙ</p><h2>Каждая встреча — часть вашей истории</h2><p class="muted">Новые знакомства, общие дела и тёплые встречи команды.</p><a class="text-link" href="#opportunities">Выбрать следующую возможность →</a></article></div>`,
+      `${header(staff() ? "Учёт участия" : "Мой вклад", staff() ? "Подтверждённые часы и история добрых дел команды." : "Встречи, которые уже состоялись, и маленькие шаги, из которых складывается поддержка.", staff() ? button("+ Записать участие", "new-hours") : "")}${contributionTabs("participation")}<div class="stats contribution-stats"><div class="stat"><strong>${hours.toLocaleString("ru-RU")} ч</strong><span>${staff() ? "Участие команды" : "Ваше участие в мероприятиях"}</span><small>Подтверждено координатором</small></div><div class="stat"><strong>${number(data.total)}</strong><span>Тёплые встречи</span><small>В выбранном периоде</small></div><div class="stat"><strong>${Number.isFinite(months) ? months : 0}</strong><span>Месяцев вместе</span><small>Спасибо, что вы с нами</small></div></div><section class="card contribution-history"><div class="section-heading"><h2>История участия</h2></div><form id="participation-filter" class="filters">${periodFields(view)}<button type="submit" class="button secondary">Применить</button></form>${items.length ? `<div class="table-wrap"><table><thead><tr><th>Возможность</th>${staff() ? "<th>Волонтёр</th>" : ""}<th>Дата</th><th>Часы</th><th>Статус</th>${staff() ? "<th>Действия</th>" : ""}</tr></thead><tbody>${items.map((item) => `<tr><td class="description-cell"><strong>${h(item.title || item.opportunity_title)}</strong>${item.note ? `<div class="muted preserve">${h(item.note)}</div>` : ""}</td>${staff() ? `<td class="content-cell"><a href="#users/${item.user_id}">${h(item.full_name)}</a></td>` : ""}<td>${date(item.participated_on)}</td><td><strong>${number(item.hours).toLocaleString("ru-RU")} ч</strong></td><td><span class="confirmed-status">${icon("confirmed")} Подтверждено</span></td>${staff() ? `<td>${button("Исправить", "edit-hours", `data-id="${item.id}"`, true)}</td>` : ""}</tr>`).join("")}</tbody></table></div><div class="contribution-total"><strong>Итого за выбранный период</strong><span>${hours.toLocaleString("ru-RU")} ч · Участий: ${number(data.total)}</span></div>` : empty("История начинается с первой встречи", "После участия координатор добавит сюда ваши часы.")}${pagination(data, "participation")}</section><div class="contribution-bottom">${gratitude ? `<article class="card gratitude-card"><p class="section-kicker">СЛОВА БЛАГОДАРНОСТИ</p><h2 class="preserve">${h(gratitude.message || gratitude.body)}</h2><p>${h(gratitude.author_name || gratitude.sender_name || "Команда «Детей Марии»")}</p><a href="#thanks">Все благодарности →</a></article>` : ""}<article class="card"><p class="section-kicker">ВМЕСТЕ С КОМАНДОЙ</p><h2>Каждая встреча — часть вашей истории</h2><p class="muted">Новые знакомства, общие дела и тёплые встречи команды.</p><a class="text-link" href="#opportunities">Выбрать следующую возможность →</a></article></div>`,
     )
   )
     return;
@@ -1677,7 +1724,7 @@ async function renderDashboard(set) {
   const trainingTotal = number(training.summary?.required_total),
     trainingComplete = number(training.summary?.required_completed);
   const hasProfile = Boolean(questionnaire.completed_at),
-    trainingReady = trainingTotal > 0 && trainingComplete === trainingTotal;
+    trainingReady = trainingTotal === 0 || trainingComplete >= trainingTotal;
   const destination = !hasProfile
     ? "#questionnaire"
     : !trainingReady
@@ -1694,7 +1741,7 @@ async function renderDashboard(set) {
       ? "Начните со знакомства с вводными материалами. К ним можно вернуться в любой момент."
       : "Посмотрите доступные встречи и отправьте отклик. Координатор поможет подготовиться.";
   set(
-    `${header(`Рады видеть вас, ${state.user.full_name.split(/\s+/)[0]}`, "Здесь — ваши встречи, обучение и всё, что помогает быть рядом.")}<section class="dashboard-next soft-panel"><div><p class="section-kicker">ВАШ СЛЕДУЮЩИЙ ШАГ</p><h3>${title}</h3><p class="muted">${description}</p></div><a class="button" href="${destination}">${!hasProfile ? "Заполнить анкету" : !trainingReady ? "К обучению" : "Все возможности"}</a></section><div class="stats dashboard-stats"><div class="stat"><strong>${number(participation.summary?.total_hours).toLocaleString("ru-RU")} ч</strong><span>Ваше участие в мероприятиях</span><small>Подтверждено координатором</small></div><div class="stat"><strong>${number(participation.summary?.entries)}</strong><span>Тёплые встречи</span><small>Столько раз вы были рядом</small></div><div class="stat"><strong>${trainingComplete} / ${trainingTotal}</strong><span>Знакомство с фондом</span><small>Обязательные материалы изучены</small></div></div><div class="dashboard-layout"><article class="card dashboard-meeting"><div class="section-heading"><h2>Ближайшие возможности</h2><a href="#opportunities">Все возможности →</a></div>${next ? `${eventImage(next, "dashboard-cover")}<div class="dashboard-meeting-body"><div><h2>${h(next.title)}</h2><p class="muted">${date(next.starts_at, true)}<br>${h([next.format, next.city].filter(Boolean).join(" · "))}</p></div><a class="button secondary" href="#opportunities/${next.id}">О встрече</a></div>` : empty("Новые встречи появятся здесь", "Посмотрите все возможности или расскажите о своих интересах.")}</article><aside class="dashboard-side">${kistikCard()}<article class="card"><p class="section-kicker">ВАШ ПРОФИЛЬ</p><h3>Ваш профиль помогает подбору</h3><p class="muted">Изменились интересы или свободное время? Обновите предпочтения.</p><a class="text-link" href="#profile">Открыть профиль →</a></article><article class="card"><h3>На связи с командой</h3><p class="muted">Ответы координатора и изменения встреч собраны в уведомлениях.</p><a class="text-link" href="#notifications">Перейти к уведомлениям →</a></article></aside></div>`,
+    `${header(`Рады видеть вас, ${state.user.full_name.split(/\s+/)[0]}`, "Здесь — ваши встречи, обучение и всё, что помогает быть рядом.")}<section class="dashboard-next soft-panel"><div><p class="section-kicker">ВАШ СЛЕДУЮЩИЙ ШАГ</p><h3>${title}</h3><p class="muted">${description}</p></div><a class="button" href="${destination}">${!hasProfile ? "Заполнить анкету" : !trainingReady ? "К обучению" : "Все возможности"}</a></section><div class="stats dashboard-stats"><div class="stat"><strong>${number(participation.summary?.total_hours).toLocaleString("ru-RU")} ч</strong><span>Ваше участие в мероприятиях</span><small>Подтверждено координатором</small></div><div class="stat"><strong>${number(participation.summary?.entries)}</strong><span>Тёплые встречи</span><small>Столько раз вы были рядом</small></div><div class="stat"><strong>${trainingComplete} / ${trainingTotal}</strong><span>Знакомство с фондом</span><small>${trainingTotal ? "Обязательные материалы изучены" : "Обязательное обучение пока не назначено"}</small></div></div><div class="dashboard-layout"><article class="card dashboard-meeting"><div class="section-heading"><h2>Ближайшие возможности</h2><a href="#opportunities">Все возможности →</a></div>${next ? `${eventImage(next, "dashboard-cover")}<div class="dashboard-meeting-body"><div><h2>${h(next.title)}</h2><p class="muted">${date(next.starts_at, true)}<br>${h([next.format, next.city].filter(Boolean).join(" · "))}</p></div><a class="button secondary" href="#opportunities/${next.id}">О встрече</a></div>` : empty("Новые встречи появятся здесь", "Посмотрите все возможности или расскажите о своих интересах.")}</article><aside class="dashboard-side">${kistikCard()}<article class="card"><p class="section-kicker">ВАШ ПРОФИЛЬ</p><h3>Ваш профиль помогает подбору</h3><p class="muted">Изменились интересы или свободное время? Обновите предпочтения.</p><a class="text-link" href="#profile">Открыть профиль →</a></article><article class="card"><h3>На связи с командой</h3><p class="muted">Ответы координатора и изменения встреч собраны в уведомлениях.</p><a class="text-link" href="#notifications">Перейти к уведомлениям →</a></article></aside></div>`,
   );
 }
 async function renderProfile(set) {
@@ -2003,6 +2050,8 @@ async function renderAnalytics(set) {
   );
 }
 function notificationTarget(item) {
+  if (item.target_type === "group" && /^\d+$/.test(String(item.target_id)))
+    return { route: `groups/${item.target_id}`, label: "Открыть разговор" };
   if (item.target_type === "chat")
     return { action: "open-chat", attrs: "", label: "Открыть сообщения" };
   if (
@@ -2321,7 +2370,7 @@ async function handleAction(element) {
     if (element.dataset.chat)
       return DMMessaging.openChat({ api, user: state.user });
     if (
-      /^(dashboard|opportunities|training|questionnaire|messages)(\/\d+)?$/.test(
+      /^(dashboard|opportunities|training|questionnaire|messages|groups)(\/\d+)?$/.test(
         element.dataset.route || "",
       )
     )
@@ -2383,6 +2432,7 @@ window.addEventListener("hashchange", async () => {
   if (!(await PortalUI.beforeRoute())) return;
   window.PortalCourses?.destroy();
   window.DMMessaging?.deactivate();
+  window.PortalCommunity?.deactivate();
   window.PortalKistik?.destroy();
   if (dialog.open) dialog.close();
   window.scrollTo({ top: 0, behavior: "instant" });

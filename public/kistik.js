@@ -41,6 +41,7 @@
         "#participation",
         "#notifications",
         "#thanks",
+        "#groups",
       ].forEach((route) => routes.add(route));
     }
     if (user?.role === "volunteer") routes.add("#dashboard");
@@ -50,9 +51,12 @@
       );
     }
     if (["manager", "admin"].includes(user?.role)) {
-      ["#messages", "#campaigns", "#analytics"].forEach((route) =>
-        routes.add(route),
-      );
+      [
+        "#messages",
+        "#campaigns",
+        "#analytics",
+        "#questionnaire-import",
+      ].forEach((route) => routes.add(route));
     }
     if (user?.role === "admin")
       ["#access", "#audit"].forEach((route) => routes.add(route));

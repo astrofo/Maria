@@ -15,6 +15,7 @@ const OMITTED = [
   "sessions",
   "pending_email_registrations",
   "pending_login_codes",
+  "password_reset_requests",
   "automation_ledger",
   "automation_state",
   "notification_broadcasts",
@@ -22,7 +23,8 @@ const OMITTED = [
   "download tickets",
   "SMTP credentials",
   "guest_session_hash",
-  "chat/campaign client_id",
+  "chat/group/campaign client_id",
+  "group message source_key",
   "campaign review_hash",
   "course active_attempt/last_attempt",
 ];
@@ -170,6 +172,7 @@ async function backupStream(res, signal, postgresEnvironment) {
       "--exclude-table-data=public.sessions",
       "--exclude-table-data=public.pending_email_registrations",
       "--exclude-table-data=public.pending_login_codes",
+      "--exclude-table-data=public.password_reset_requests",
     ],
     { env: postgresEnvironment(), stdio: ["ignore", "pipe", "pipe"] },
   );

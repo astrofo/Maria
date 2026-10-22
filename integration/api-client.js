@@ -374,6 +374,32 @@ export function createApiClient({
       get: () => get("/questionnaire"),
       update: (fields) => patch("/questionnaire", fields),
     },
+    questionnaireImport: {
+      preview: (csv) => post("/questionnaire-import/preview", { csv }),
+      apply: (previewToken) =>
+        post("/questionnaire-import/apply", {
+          preview_token: previewToken,
+          confirm: true,
+        }),
+    },
+    groups: {
+      list: (filters) => get("/groups", filters),
+      unreadCount: () => get("/groups/unread-count"),
+      forEvent: (eventId) => get(`/groups/events/${idPath(eventId)}`),
+      messages: (id, cursor) => get(`/groups/${idPath(id)}/messages`, cursor),
+      // Reuse clientId when retrying the same message after a network failure.
+      send: (id, body, clientId, kind = "message") =>
+        post(`/groups/${idPath(id)}/messages`, {
+          body,
+          client_id: clientId,
+          kind,
+        }),
+      markRead: (id, messageId) =>
+        post(`/groups/${idPath(id)}/read`, { message_id: messageId }),
+      members: (id, filters) => get(`/groups/${idPath(id)}/members`, filters),
+      direct: (id, userId) =>
+        post(`/groups/${idPath(id)}/direct`, { user_id: userId }),
+    },
     opportunities: {
       list: (filters) => get("/opportunities", filters),
       filterOptions: (filters) =>

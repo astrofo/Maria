@@ -72,7 +72,10 @@ async function remindEvents(tx) {
   // Recheck eligibility after taking the event locks. The key includes starts_at,
   // so a rescheduled event may issue a reminder for its new date.
   const { rows } = await tx.query(
-    `SELECT a.user_id,${eventKey} AS event_key,
+    `SELECT a.user_id,o.id AS opportunity_id,${eventKey} AS event_key,
+      ('reminder:' || o.id::text || ':' ||
+        (EXTRACT(EPOCH FROM o.starts_at) * 1000000)::bigint::text || ':' ||
+        CASE WHEN o.starts_at<=NOW()+INTERVAL '2 hours' THEN '2h' ELSE '24h' END) AS group_key,
       CASE WHEN o.starts_at<=NOW()+INTERVAL '2 hours' THEN '2h' ELSE '24h' END AS reminder_window
     FROM opportunities o JOIN applications a ON a.opportunity_id=o.id
       JOIN users u ON u.id=a.user_id
@@ -82,6 +85,28 @@ async function remindEvents(tx) {
     ORDER BY o.starts_at,o.id,a.user_id LIMIT 500`,
     [locked.rows.map((row) => row.id)],
   );
+  // Personal reminders are batched by recipient. The group gets one shared
+  // announcement for the same date/window, even when delivery spans many ticks.
+  const announcements = [
+    ...new Map(
+      rows.map((row) => [
+        row.group_key,
+        {
+          opportunity_id: row.opportunity_id,
+          source_key: row.group_key,
+          body: `Напоминание: мероприятие начнётся в течение ${row.reminder_window === "2h" ? "2 часов" : "24 часов"}. Проверьте время и место в карточке встречи.`,
+        },
+      ]),
+    ).values(),
+  ];
+  if (announcements.length) {
+    await tx.query(
+      `SELECT append_group_system_message(opportunity_id,source_key,body)
+       FROM jsonb_to_recordset($1::jsonb)
+         AS announcement(opportunity_id BIGINT,source_key TEXT,body TEXT)`,
+      [JSON.stringify(announcements)],
+    );
+  }
   return notifyOnce(
     tx,
     rows.map((row) => ({
@@ -90,7 +115,7 @@ async function remindEvents(tx) {
       user_id: row.user_id,
       title: "Скоро мероприятие",
       // No private event details remain in notifications after permissions change.
-      body: `Мероприятие, на которое подтверждено ваше участие, начнётся в течение ${row.reminder_window === "2h" ? "2 часов" : "24 часов"}. Подробности — в разделе «Мероприятия».`,
+      body: `Мероприятие, на которое подтверждено ваше участие, начнётся в течение ${row.reminder_window === "2h" ? "2 часов" : "24 часов"}. Подробности — в разделе «Возможности».`,
     })),
   );
 }

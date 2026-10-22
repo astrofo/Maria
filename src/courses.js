@@ -1,5 +1,6 @@
 const { createHash, createHmac, randomUUID } = require("node:crypto");
 const { z, id } = require("./validation");
+const { courseAvailable } = require("./training-progress");
 
 const text = (n) => z.string().trim().max(n);
 const localImage = text(1000).refine(
@@ -352,10 +353,7 @@ async function readLearningSummary(tx, userId) {
       `SELECT COUNT(*)::int AS total,COUNT(*) FILTER (WHERE p.completed_at IS NOT NULL)::int AS completed
     FROM courses c JOIN users u ON u.id=$1 CROSS JOIN LATERAL jsonb_array_elements(c.document->'lessons') l
     LEFT JOIN course_lesson_progress p ON p.course_id=c.id AND p.user_id=u.id AND p.lesson_id=l->>'id' AND p.content_hash=l->>'content_hash'
-    WHERE c.archived_at IS NULL AND c.status='published' AND (c.document->>'required')::boolean
-    AND (c.document->>'audience'='all' OR c.document->>'audience'=u.status)
-    AND (c.document->>'starts_at' IS NULL OR (c.document->>'starts_at')::timestamptz<=NOW())
-    AND (c.document->>'ends_at' IS NULL OR (c.document->>'ends_at')::timestamptz>NOW())`,
+    WHERE ${courseAvailable()} AND (c.document->>'required')::boolean`,
       [userId],
     )
   ).rows[0];
@@ -623,6 +621,19 @@ function registerCourseRoutes(app, { db, auth, requireRole, wrap, audit }) {
           fail(409, "Курс изменился. Откройте актуальную версию.");
         const issues = publicationIssues(c.document);
         if (input.published && issues.length) fail(400, issues.join(" "));
+        if (!input.published) {
+          // Event assignment holds this course FOR SHARE. Keeping its exclusive
+          // lock here prevents leaving an active event with unavailable training.
+          const references = await tx.query(
+            "SELECT id FROM opportunities WHERE required_course_id=$1 AND archived_at IS NULL AND status IN ('open','draft') LIMIT 1",
+            [c.id],
+          );
+          if (references.rows.length)
+            fail(
+              409,
+              "Курс обязателен для действующего мероприятия. Сначала замените или уберите подготовительный курс.",
+            );
+        }
         const updated = (
           await tx.query(
             "UPDATE courses SET status=$2,version=version+1,updated_at=NOW() WHERE id=$1 RETURNING *",

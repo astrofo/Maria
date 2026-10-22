@@ -3,6 +3,21 @@ const { promisify } = require("node:util");
 const bcrypt = require("bcryptjs");
 const scrypt = promisify(crypto.scrypt);
 
+function hasPassword(hash) {
+  if (typeof hash !== "string") return false;
+  if (/^\$2[aby]\$(0[4-9]|[12]\d|3[01])\$[./A-Za-z0-9]{53}$/.test(hash))
+    return true;
+  const parts = hash.split("$");
+  return (
+    parts.length === 6 &&
+    parts.slice(0, 4).join("$") === "scrypt$16384$8$1" &&
+    /^[A-Za-z0-9_-]+$/.test(parts[4]) &&
+    /^[A-Za-z0-9_-]+$/.test(parts[5]) &&
+    Buffer.from(parts[4], "base64url").length === 16 &&
+    Buffer.from(parts[5], "base64url").length === 64
+  );
+}
+
 // New passwords support the complete Unicode string; existing bcrypt hashes remain usable.
 async function hashPassword(password) {
   const salt = crypto.randomBytes(16);
@@ -36,4 +51,4 @@ async function verifyPassword(password, hash) {
   });
   return crypto.timingSafeEqual(actual, expected);
 }
-module.exports = { hashPassword, verifyPassword };
+module.exports = { hashPassword, verifyPassword, hasPassword };

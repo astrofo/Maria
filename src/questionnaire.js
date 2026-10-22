@@ -348,4 +348,8 @@ function registerQuestionnaireRoutes(
     }),
   );
 }
-module.exports = { registerQuestionnaireRoutes };
+module.exports = {
+  registerQuestionnaireRoutes,
+  questionnaireSchema: schema,
+  questionnaireOptions: options,
+};

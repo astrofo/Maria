@@ -52,12 +52,18 @@ test("Current interface works with an isolated local API", async (t) => {
     sendPasswordReset: async (message) =>
       sent.push({ ...message, kind: "recovery" }),
   };
+  const stopDelivery = require("../src/login-code").startLoginCodeDelivery({
+    db: database,
+    mailer,
+    intervalMs: 50,
+  });
   const server = createApp({ mailer }).listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   const windows = [];
   t.after(async () => {
     windows.forEach((ui) => ui.close());
+    await stopDelivery();
     await new Promise((resolve) => server.close(resolve));
     await database.close();
   });
@@ -186,10 +192,12 @@ test("Current interface works with an isolated local API", async (t) => {
       fill(volunteer, "first_name", "Анна");
       fill(volunteer, "last_name", "Проверенная");
       fill(volunteer, "phone", "+7 900 123-45-67");
+      fill(volunteer, "city", "Самара");
       submit(volunteer, "#profile-form");
       await until(
         async () => (await volunteer.api("/me")).user.phone === "+79001234567",
       );
+      assert.equal((await volunteer.api("/me")).user.city, "Самара");
       manager = await login("manager@demo.local");
       coordinator = await login("coordinator@demo.local");
       assert.ok(
@@ -316,6 +324,82 @@ test("Current interface works with an isolated local API", async (t) => {
       assert.equal(
         volunteer.document.querySelector('[name="city"]').value,
         "Ярославль",
+      );
+    },
+  );
+  await t.test(
+    "event groups keep announcements, member direct messages and support separate",
+    async () => {
+      await navigate(volunteer, `event-chat/${event.id}`, ".community-compose");
+      const group = (await volunteer.api(`/groups/events/${event.id}`)).item;
+      const text = '<img onerror="alert(1)">Помогу на встрече';
+      fill(volunteer, "body", text);
+      submit(volunteer, ".community-compose");
+      await volunteer.waitFor(() =>
+        volunteer.document
+          .querySelector(".dm-live")
+          ?.textContent.includes("отправлено"),
+      );
+      assert.equal(volunteer.document.querySelector(".dm-bubble img"), null);
+      assert.equal(
+        (await volunteer.api(`/groups/${group.id}/messages`)).items.at(-1).body,
+        text,
+      );
+      assert.equal(
+        volunteer.document.querySelector("[data-community-kind]").hidden,
+        true,
+      );
+      await navigate(manager, `event-chat/${event.id}`, ".community-compose");
+      fill(manager, "kind", "announcement");
+      fill(manager, "body", "Встречаемся у входа в мастерскую");
+      submit(manager, ".community-compose");
+      await manager.waitFor(".community-announcement");
+      await navigate(
+        volunteer,
+        `groups/${group.id}`,
+        ".community-announcement",
+      );
+      const details = volunteer.document.querySelector(".community-members");
+      details.open = true;
+      details.dispatchEvent(new volunteer.window.Event("toggle"));
+      const managerId = (await manager.api("/me")).user.id;
+      const directButton = await volunteer.waitFor(
+        `[data-community-direct="${managerId}"]`,
+      );
+      directButton.click();
+      await volunteer.waitFor(
+        () =>
+          volunteer.window.location.hash.startsWith("#groups/") &&
+          volunteer.window.location.hash !== `#groups/${group.id}`,
+      );
+      await volunteer.waitFor(".community-compose");
+      assert.equal(
+        volunteer.document.querySelector(".community-members"),
+        null,
+      );
+      fill(volunteer, "body", "Личное уточнение времени");
+      submit(volunteer, ".community-compose");
+      await volunteer.waitFor(() =>
+        volunteer.document
+          .querySelector(".dm-live")
+          ?.textContent.includes("отправлено"),
+      );
+      const directId = volunteer.window.location.hash.split("/")[1];
+      await navigate(manager, `groups/${directId}`, ".community-compose");
+      assert.match(
+        manager.document.querySelector(".dm-message-list").textContent,
+        /Личное уточнение/,
+      );
+      assert.equal(
+        (await manager.api(`/groups/${group.id}/messages`)).items.some((item) =>
+          item.body.includes("Личное уточнение"),
+        ),
+        false,
+      );
+      await navigate(
+        manager,
+        `organizer-events/${event.id}`,
+        `[data-action="org-archive-event"][data-id="${event.id}"]`,
       );
     },
   );
@@ -585,7 +669,8 @@ test("Current interface works with an isolated local API", async (t) => {
   await t.test(
     "local chat saves escaped messages and closes cleanly",
     async () => {
-      volunteer.document.querySelector('[data-action="open-chat"]').click();
+      await navigate(volunteer, "groups", "[data-community-support]");
+      volunteer.document.querySelector("[data-community-support]").click();
       await volunteer.waitFor(".dm-chat-dialog .dm-message-form");
       const text = '<svg onload="alert(1)">Нужна помощь</svg>';
       fill(volunteer, "body", text);
@@ -625,6 +710,325 @@ test("Current interface works with an isolated local API", async (t) => {
         admin.document.querySelector('[name="export_password"]').type,
         "password",
       );
+    },
+  );
+  await t.test(
+    "manager previews and applies CSV imports without creating consent",
+    async () => {
+      await navigate(manager, "users", 'a[href="#questionnaire-import"]');
+      manager.document.querySelector('a[href="#questionnaire-import"]').click();
+      await manager.waitFor("#questionnaire-import-form");
+      fill(
+        manager,
+        "csv",
+        "full_name,email,city\nНовый <b>волонтёр</b>,ui-import@example.test,Тверь\nДубликат,volunteer@demo.local,Москва",
+      );
+      submit(manager, "#questionnaire-import-form");
+      await manager.waitFor("[data-import-preview] tbody tr");
+      assert.equal(
+        manager.document.querySelector("[data-import-preview] b"),
+        null,
+      );
+      assert.match(
+        manager.document.querySelector("[data-import-preview]").textContent,
+        /Пропущен/,
+      );
+      const before = await manager.api("/users?q=ui-import@example.test");
+      assert.equal(before.total, 0);
+      fill(
+        manager,
+        "csv",
+        "full_name,email,city\nНовый <b>волонтёр</b>,ui-import@example.test,Тверь",
+      );
+      assert.equal(
+        manager.document.querySelector("#questionnaire-import-apply"),
+        null,
+      );
+      submit(manager, "#questionnaire-import-form");
+      await manager.waitFor("#questionnaire-import-apply");
+      fill(manager, "confirm", true);
+      submit(manager, "#questionnaire-import-apply");
+      await manager.waitFor(() =>
+        manager.document
+          .querySelector("[data-import-preview]")
+          .textContent.includes("Импорт завершён"),
+      );
+      const imported = (await manager.api("/users?q=ui-import@example.test"))
+        .items[0];
+      assert.equal(imported.city, "Тверь");
+      assert.equal(imported.role, "volunteer");
+      const stored = await database.query(
+        "SELECT email_verified_at FROM users WHERE id=$1",
+        [imported.id],
+      );
+      assert.equal(stored.rows[0].email_verified_at, null);
+      const importedUI = await open({ route: "#login" });
+      await importedUI.waitFor("#auth-form");
+      fill(importedUI, "email", "ui-import@example.test");
+      submit(importedUI, "#auth-form");
+      await importedUI.waitFor("#login-verification-form");
+      const code = (
+        await until(() =>
+          sent.findLast(
+            (entry) =>
+              entry.kind === "login" &&
+              entry.email === "ui-import@example.test",
+          ),
+        )
+      ).code;
+      assert.notEqual(code, "1234");
+      otp(importedUI, code);
+      submit(importedUI, "#login-verification-form");
+      await importedUI.waitFor(".sidebar");
+      await navigate(importedUI, "profile", "#profile-form");
+      assert.match(
+        importedUI.document.querySelector(".profile-security").textContent,
+        /Пароль ещё не установлен/,
+      );
+      assert.ok(
+        importedUI.document.querySelector(
+          '.profile-security a[href="#forgot-password"]',
+        ),
+      );
+      assert.equal(
+        importedUI.document.querySelector('[data-action="change-password"]'),
+        null,
+      );
+      await navigate(coordinator, "questionnaire-import", "#content .empty");
+      assert.equal(
+        coordinator.document.querySelector("#questionnaire-import-form"),
+        null,
+      );
+    },
+  );
+  await t.test(
+    "no mandatory training permits next step and course gating has an explicit CTA",
+    async () => {
+      const ui = await login("volunteer@demo.local", {
+        fetchAdapter: async (url, options, send) => {
+          const response = await send();
+          if (!response.ok || (options.method && options.method !== "GET"))
+            return response;
+          const path = new URL(url).pathname;
+          if (
+            ![
+              "/api/courses/summary",
+              "/api/questionnaire",
+              "/api/opportunities/1",
+            ].includes(path)
+          )
+            return response;
+          const data = await response.json();
+          if (path === "/api/courses/summary") {
+            data.summary.required_total = 0;
+            data.summary.required_completed = 0;
+          }
+          if (path === "/api/questionnaire")
+            data.completed_at = new Date().toISOString();
+          if (path === "/api/opportunities/1") {
+            data.item.my_application = null;
+            data.item.status = "open";
+            data.item.training_requirement = {
+              course_id: 987,
+              available: true,
+              completed: false,
+            };
+            data.item.required_course_title = "Вводный курс";
+          }
+          return Response.json(data, { status: response.status });
+        },
+      });
+      await navigate(
+        ui,
+        "dashboard",
+        '.dashboard-next a[href="#opportunities"]',
+      );
+      assert.match(
+        ui.document.querySelector(".dashboard-stats").textContent,
+        /Обязательное обучение пока не назначено/,
+      );
+      await navigate(ui, "profile", "#profile-form");
+      assert.match(
+        ui.document.querySelector(".profile-milestones").textContent,
+        /Обязательное обучение пока не назначено/,
+      );
+      await navigate(
+        ui,
+        "participation",
+        'nav[aria-label="Мой вклад"] a[href="#applications"]',
+      );
+      ui.document
+        .querySelector('nav[aria-label="Мой вклад"] a[href="#applications"]')
+        .click();
+      await ui.waitFor("#applications-filter");
+      assert.ok(
+        ui.document.querySelector(
+          '.sidebar a[href="#participation"][aria-current="page"]',
+        ),
+      );
+      await navigate(
+        ui,
+        "opportunities/1",
+        '.event-apply a[href="#training/course/987"]',
+      );
+      assert.equal(ui.document.querySelector('[data-action="apply"]'), null);
+    },
+  );
+  await t.test(
+    "own group sends do not skip concurrent incoming messages or mark gaps read",
+    async () => {
+      let sentMessage = false;
+      const readIds = [],
+        cursors = [];
+      const group = {
+        id: 777,
+        kind: "event",
+        title: "Проверка порядка",
+        read_only: false,
+        can_announce: false,
+      };
+      const message = (id, body, mine = false) => ({
+        id,
+        body,
+        is_mine: mine,
+        sender_name: "Участник",
+        kind: "message",
+        created_at: new Date().toISOString(),
+      });
+      const ui = await login("volunteer@demo.local", {
+        fetchAdapter: async (url, options, send) => {
+          const target = new URL(url);
+          if (target.pathname === "/api/groups/777/read") {
+            readIds.push(JSON.parse(options.body).message_id);
+            return Response.json({ ok: true });
+          }
+          if (target.pathname !== "/api/groups/777/messages") return send();
+          if (options.method === "POST") {
+            sentMessage = true;
+            return Response.json({
+              message: message(102, "Моё сообщение", true),
+            });
+          }
+          const cursor = Number(target.searchParams.get("after_id"));
+          cursors.push(cursor);
+          return Response.json({
+            group,
+            items:
+              cursor === 100 && sentMessage
+                ? [
+                    message(101, "Одновременный ответ"),
+                    message(102, "Моё сообщение", true),
+                  ]
+                : cursor
+                  ? []
+                  : [message(100, "Начало")],
+            has_more: false,
+          });
+        },
+      });
+      await navigate(ui, "groups/777", ".community-compose");
+      await ui.waitFor(() => readIds.includes(100));
+      fill(ui, "body", "Моё сообщение");
+      submit(ui, ".community-compose");
+      await ui.waitFor(() =>
+        ui.document
+          .querySelector(".dm-message-list")
+          .textContent.includes("Одновременный ответ"),
+      );
+      const bodies = [...ui.document.querySelectorAll(".dm-bubble p")].map(
+        (el) => el.textContent,
+      );
+      assert.deepEqual(bodies, [
+        "Начало",
+        "Одновременный ответ",
+        "Моё сообщение",
+      ]);
+      assert.ok(cursors.includes(100));
+      await ui.waitFor(() => readIds.includes(102));
+      assert.equal(readIds[0], 100);
+    },
+  );
+  await t.test(
+    "closed event conversations remain readable but disable sending",
+    async () => {
+      await navigate(volunteer, `event-chat/${event.id}`, ".community-compose");
+      assert.equal(
+        volunteer.document.querySelector('[name="body"]').disabled,
+        true,
+      );
+      assert.equal(
+        volunteer.document.querySelector('.community-compose [type="submit"]')
+          .disabled,
+        true,
+      );
+      assert.match(
+        volunteer.document.querySelector(".dm-message-list").textContent,
+        /Помогу на встрече/,
+      );
+    },
+  );
+  await t.test(
+    "support chat also preserves concurrent incoming replies",
+    async () => {
+      let sentMessage = false;
+      const cursors = [];
+      const message = (id, body, sender_kind = "user") => ({
+        id,
+        body,
+        sender_kind,
+        sender_name: "Команда",
+        created_at: new Date().toISOString(),
+      });
+      const thread = { id: 777, owner_read_id: 0, staff_read_id: 0 };
+      const ui = await login("volunteer@demo.local", {
+        fetchAdapter: async (url, options, send) => {
+          const target = new URL(url);
+          if (target.pathname === "/api/chat/read")
+            return Response.json({ ok: true });
+          if (
+            target.pathname === "/api/chat/messages" &&
+            options.method === "POST"
+          ) {
+            sentMessage = true;
+            return Response.json({ message: message(102, "Мой вопрос") });
+          }
+          if (target.pathname !== "/api/chat") return send();
+          const cursor = Number(target.searchParams.get("after_id"));
+          cursors.push(cursor);
+          return Response.json({
+            thread,
+            items:
+              cursor === 100 && sentMessage
+                ? [
+                    message(101, "Ответ организатора", "organizer"),
+                    message(102, "Мой вопрос"),
+                  ]
+                : cursor
+                  ? []
+                  : [message(100, "Начало")],
+            has_more: false,
+          });
+        },
+      });
+      await navigate(ui, "groups", "[data-community-support]");
+      ui.document.querySelector("[data-community-support]").click();
+      await ui.waitFor(".dm-chat-dialog .dm-message-form");
+      fill(ui, "body", "Мой вопрос");
+      submit(ui, ".dm-chat-dialog .dm-message-form");
+      await ui.waitFor(() =>
+        ui.document
+          .querySelector(".dm-message-list")
+          .textContent.includes("Ответ организатора"),
+      );
+      assert.deepEqual(
+        [...ui.document.querySelectorAll(".dm-bubble p")].map(
+          (el) => el.textContent,
+        ),
+        ["Начало", "Ответ организатора", "Мой вопрос"],
+      );
+      assert.ok(cursors.includes(100));
+      ui.document.querySelector("[data-dm-close]").click();
+      await ui.waitFor(() => !ui.document.querySelector(".dm-chat-dialog"));
     },
   );
   await t.test("no unhandled runtime errors in tested DOM interactions", () => {

@@ -1,6 +1,10 @@
 const V = require("./validation");
 const { enqueueEventNotification } = require("./notification-queue");
 const {
+  readTrainingRequirements,
+  requireEventTraining,
+} = require("./training-progress");
+const {
   pagination,
   period,
   readPage,
@@ -353,6 +357,16 @@ function registerOpportunityRoutes(
       result.items = result.items.map((event) =>
         withMatchScore(event, req.user),
       );
+      if (req.user.role === "volunteer") {
+        const requirements = await readTrainingRequirements(
+          db,
+          result.items.map((item) => item.required_course_id),
+          req.user,
+        );
+        for (const item of result.items)
+          item.training_requirement =
+            requirements.get(String(item.required_course_id)) || null;
+      }
       res.json(result);
     }),
   );
@@ -367,7 +381,17 @@ function registerOpportunityRoutes(
         staff(req.user),
         id,
       ]);
-      res.json({ item: withMatchScore(item, req.user) });
+      const result = withMatchScore(item, req.user);
+      if (req.user.role === "volunteer") {
+        const requirements = await readTrainingRequirements(
+          db,
+          [item.required_course_id],
+          req.user,
+        );
+        result.training_requirement =
+          requirements.get(String(item.required_course_id)) || null;
+      }
+      res.json({ item: result });
     }),
   );
 
@@ -710,6 +734,7 @@ function registerOpportunityRoutes(
           if (deadline.rows[0].expired)
             fail(409, "Срок приёма заявок завершён");
         }
+        await requireEventTraining(tx, event, actor);
         const { rows } = await tx.query(
           "SELECT * FROM applications WHERE opportunity_id=$1 AND user_id=$2",
           [id, req.user.id],
@@ -833,6 +858,7 @@ function registerOpportunityRoutes(
           const volunteer = await assertVolunteer(tx, a.user_id);
           if (volunteer.status === "closed")
             fail(409, "Аккаунт волонтёра закрыт");
+          await requireEventTraining(tx, event, volunteer);
           const { rows } = await tx.query(
             "SELECT COUNT(*)::int AS count FROM applications WHERE opportunity_id=$1 AND status='accepted'",
             [event.id],

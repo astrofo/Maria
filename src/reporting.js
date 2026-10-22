@@ -1,4 +1,5 @@
 const V = require("./validation");
+const { courseAvailable } = require("./training-progress");
 
 const pageSchema = V.z.coerce.number().int().min(1).max(100000);
 const periodSchema = V.z
@@ -154,11 +155,25 @@ function registerReportingRoutes(app, { db, auth, requireRole, wrap, getOne }) {
              COUNT(*) FILTER (WHERE NOT EXISTS (
                SELECT 1 FROM training_materials m WHERE m.required AND m.published
                  AND NOT EXISTS (SELECT 1 FROM training_completions c WHERE c.user_id=u.id AND c.material_id=m.id)
+             ) AND NOT EXISTS (
+               SELECT 1 FROM courses c CROSS JOIN LATERAL jsonb_array_elements(c.document->'lessons') lesson
+               WHERE ${courseAvailable()} AND (c.document->>'required')::boolean
+                 AND NOT EXISTS (
+                   SELECT 1 FROM course_lesson_progress p WHERE p.user_id=u.id AND p.course_id=c.id
+                     AND p.lesson_id=lesson->>'id' AND p.content_hash=lesson->>'content_hash'
+                     AND p.completed_at IS NOT NULL
+                 )
              ))::int AS required_training_completed
            FROM users u WHERE u.role='volunteer' AND u.status<>'closed'`,
         );
         const requiredTraining = await tx.query(
           "SELECT COUNT(*)::int AS count FROM training_materials WHERE required AND published",
+        );
+        const requiredCourses = await tx.query(
+          `SELECT COUNT(*)::int AS courses,COALESCE(SUM(jsonb_array_length(c.document->'lessons')),0)::int AS lessons
+           FROM courses c WHERE c.status='published' AND c.archived_at IS NULL AND (c.document->>'required')::boolean
+             AND (c.document->>'starts_at' IS NULL OR (c.document->>'starts_at')::timestamptz<=NOW())
+             AND (c.document->>'ends_at' IS NULL OR (c.document->>'ends_at')::timestamptz>NOW())`,
         );
         return {
           users: users.rows,
@@ -169,7 +184,11 @@ function registerReportingRoutes(app, { db, auth, requireRole, wrap, getOne }) {
           monthly_activity: monthlyActivity.rows,
           onboarding: {
             ...onboarding.rows[0],
-            required_materials: requiredTraining.rows[0].count,
+            required_materials:
+              requiredTraining.rows[0].count + requiredCourses.rows[0].lessons,
+            legacy_required_materials: requiredTraining.rows[0].count,
+            required_courses: requiredCourses.rows[0].courses,
+            required_course_lessons: requiredCourses.rows[0].lessons,
           },
           period: { date_from: params[0], date_to: params[1], timezone: "UTC" },
         };

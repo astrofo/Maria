@@ -47,7 +47,7 @@
   const successMark =
     '<div class="dm-success-mark"><img src="/assets/figma/messaging-success.svg" alt="" width="24" height="24"></div>';
   const tabbar = (active) =>
-    `<nav class="dm-tabs" aria-label="Раздел сообщений"><a class="dm-chip ${active === "inbox" ? "selected" : ""}" href="#messages" ${active === "inbox" ? 'aria-current="page"' : ""}>Диалоги</a><a class="dm-chip ${active === "campaigns" ? "selected" : ""}" href="#campaigns" ${active === "campaigns" ? 'aria-current="page"' : ""}>Рассылки</a></nav>`;
+    `<nav class="dm-tabs" aria-label="Раздел сообщений"><a class="dm-chip" href="#groups">Общение</a><a class="dm-chip ${active === "inbox" ? "selected" : ""}" href="#messages" ${active === "inbox" ? 'aria-current="page"' : ""}>Обращения в фонд</a><a class="dm-chip ${active === "campaigns" ? "selected" : ""}" href="#campaigns" ${active === "campaigns" ? 'aria-current="page"' : ""}>Рассылки</a></nav>`;
   const badge = (text) =>
     `<span class="dm-status"><img src="/assets/figma/messaging-dot.svg" width="6" height="6" alt="">${h(text)}</span>`;
   const pageHead = (title, subtitle) =>
@@ -192,7 +192,15 @@
       loading = false,
       readId = 0,
       reading = false;
-    let stopped = false;
+    let stopped = false,
+      serverCursor = Number(items.at(-1)?.id) || 0,
+      catchupPending = false;
+    // Sending a message is not proof that all earlier incoming messages were fetched.
+    const merge = (incoming) => {
+      const byId = new Map(items.map((item) => [String(item.id), item]));
+      for (const item of incoming) byId.set(String(item.id), item);
+      items = [...byId.values()].sort((a, b) => Number(a.id) - Number(b.id));
+    };
     const draft = drafts.get(draftKey) || {
       body: "",
       clientId: null,
@@ -231,7 +239,7 @@
       fresh.hidden = true;
     };
     const markRead = async () => {
-      const id = items.at(-1)?.id;
+      const id = serverCursor;
       if (
         !id ||
         Number(id) <= Number(readId) ||
@@ -308,27 +316,38 @@
         if (valid()) error.textContent = e.message;
       } finally {
         loading = false;
-        if (valid()) older.disabled = false;
+        if (valid()) {
+          older.disabled = false;
+          if (catchupPending) void refresh();
+        }
       }
     });
     const refresh = async (forceBottom = false) => {
-      if (!valid() || loading || document.hidden) return;
+      if (!valid() || document.hidden) return;
+      if (loading) {
+        catchupPending = true;
+        return;
+      }
+      catchupPending = false;
       loading = true;
       const atEnd = nearEnd(),
         top = history.scrollTop;
       try {
         const response = await request(
           context,
-          `${path}${items.length ? `?after_id=${encodeURIComponent(items.at(-1).id)}` : ""}`,
+          `${path}${serverCursor ? `?after_id=${encodeURIComponent(serverCursor)}` : ""}`,
         );
         if (!valid()) return;
         const known = new Set(items.map((item) => String(item.id)));
         const incoming = response.items.filter(
           (item) => !known.has(String(item.id)),
         );
-        items.push(...incoming);
+        merge(response.items);
         data.thread = response.thread;
-        if (!items.length) data.has_more = response.has_more;
+        if (!serverCursor) data.has_more = response.has_more;
+        else if (response.has_more && response.items.length)
+          catchupPending = true;
+        serverCursor = Number(response.items.at(-1)?.id) || serverCursor;
         draw();
         if (forceBottom || atEnd) {
           history.scrollTop = history.scrollHeight;
@@ -344,6 +363,7 @@
         }
       } finally {
         loading = false;
+        if (catchupPending && valid()) void refresh();
       }
     };
     form.addEventListener("submit", async (event) => {
@@ -363,13 +383,9 @@
         if (!staffView && eventId) payload.opportunity_id = Number(eventId);
         const response = await request(context, endpoint, payload);
         if (!valid()) return;
-        if (
-          !items.some((item) => String(item.id) === String(response.message.id))
-        )
-          items.push({
-            ...response.message,
-            sender_name: context.user?.full_name || "Вы",
-          });
+        merge([
+          { ...response.message, sender_name: context.user?.full_name || "Вы" },
+        ]);
         input.value = "";
         draft.body = "";
         draft.clientId = null;
@@ -491,7 +507,7 @@
       return;
     }
     set(
-      `<section class="dm-page" data-dm-root>${pageHead("Сообщения", "Разговоры с волонтёрами, гостями и командой фонда.")}${tabbar("inbox")}<form class="dm-filters">${field("Поиск диалога", "q", "", 'placeholder="Имя или текст сообщения" maxlength="120"')}<label class="dm-field"><span>Показать</span><select name="filter"><option value="all">Все диалоги</option><option value="unread">Непрочитанные</option><option value="guest">Гости</option>${Object.entries(
+      `<section class="dm-page" data-dm-root>${pageHead("Обращения в фонд", "Личные вопросы волонтёров и гостей команде фонда.")}${tabbar("inbox")}<form class="dm-filters">${field("Поиск диалога", "q", "", 'placeholder="Имя или текст сообщения" maxlength="120"')}<label class="dm-field"><span>Показать</span><select name="filter"><option value="all">Все диалоги</option><option value="unread">Непрочитанные</option><option value="guest">Гости</option>${Object.entries(
         roles,
       )
         .map(([value, title]) => `<option value="${value}">${title}</option>`)

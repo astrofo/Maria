@@ -1076,3 +1076,121 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Community conversations reuse the support inbox layout and its phone back button. */
+.community-page .dm-thread {
+  text-decoration: none;
+}
+.community-page .dm-thread-list > .actions {
+  padding: 12px;
+  flex-wrap: wrap;
+}
+.community-page .dm-thread-list h2 {
+  font-size: 18px;
+}
+.community-member-filter {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.community-member-filter .dm-field {
+  flex: 1 1 160px;
+}
+.community-member-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.community-member-list li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--dm-line);
+}
+.community-member-list small {
+  display: block;
+  color: var(--dm-muted);
+}
+.community-members summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-weight: 600;
+}
+.community-announcement {
+  border: 2px solid var(--dm-mint);
+}
+.community-compose [data-community-kind] {
+  max-width: 340px;
+}
+#questionnaire-import-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+#questionnaire-import-form label {
+  display: grid;
+  gap: 8px;
+}
+#questionnaire-import-form textarea {
+  width: 100%;
+  min-height: 180px;
+  font: 14px/1.5 monospace;
+}
+[data-import-preview] td {
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+#questionnaire-import-apply {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+@media (max-width: 767px) {
+  .community-member-list li {
+    align-items: start;
+    flex-direction: column;
+  }
+  .community-member-list .button {
+    width: 100%;
+  }
+  .community-page [data-community-list] {
+    display: contents;
+  }
+}
+[data-import-preview] {
+  margin-top: 24px;
+}
+@media (max-width: 767px) {
+  .import-preview-table,
+  .import-preview-table tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .import-preview-table thead {
+    display: none;
+  }
+  .import-preview-table tr {
+    display: block;
+    border-bottom: 1px solid var(--line, #d8e0d7);
+    padding: 12px 0;
+  }
+  .import-preview-table td {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 8px;
+    width: 100%;
+    padding: 6px 0;
+    border: 0;
+    white-space: normal;
+  }
+  .import-preview-table td::before {
+    content: attr(data-label);
+    color: #53695f;
+    font-weight: 600;
+  }
+}

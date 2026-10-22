@@ -1,7 +1,7 @@
 const express = require("express");
 const session = require("express-session");
 const helmet = require("helmet");
-const { hashPassword, verifyPassword } = require("./passwords");
+const { hashPassword, verifyPassword, hasPassword } = require("./passwords");
 const crypto = require("node:crypto");
 const path = require("node:path");
 const rateLimit = require("express-rate-limit");
@@ -22,6 +22,7 @@ const {
   passwordRecoveryAvailable,
 } = require("./password-recovery");
 const { registerQuestionnaireRoutes } = require("./questionnaire");
+const { registerQuestionnaireImport } = require("./questionnaire-import");
 const { registerExportRoutes } = require("./exports");
 const { registerOpportunityRoutes } = require("./opportunities");
 const { registerStaffTaskRoutes } = require("./staff-tasks");
@@ -29,6 +30,7 @@ const { registerAutomationRoutes } = require("./automation");
 const { registerReportingRoutes } = require("./reporting");
 const { registerCourseRoutes, readLearningSummary } = require("./courses");
 const { registerMessagingRoutes } = require("./messaging");
+const { registerGroupMessagingRoutes } = require("./group-messaging");
 const { registerAssistantRoutes } = require("./assistant");
 const V = require("./validation");
 const {
@@ -49,7 +51,11 @@ const wrap = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
 const publicProfile = (u) => {
   const { password_hash, auth_version, ...safe } = u;
-  return { ...safe, email_demo_account: isDemoEmailAccount(u.email) };
+  return {
+    ...safe,
+    has_password: hasPassword(password_hash),
+    email_demo_account: isDemoEmailAccount(u.email),
+  };
 };
 const staff = (user) => roles[user.role] >= 1;
 const manage = (user) => roles[user.role] >= 2;
@@ -227,6 +233,7 @@ function createApp({ db = database, mailer = createMailer() } = {}) {
     return staticFiles(req, res, next);
   });
   app.use("/api/courses", express.json({ limit: "512kb" }));
+  app.use("/api/questionnaire-import", express.json({ limit: "1mb" }));
   app.use("/api", express.json({ limit: "64kb" }));
   app.use(
     "/api",
@@ -1135,6 +1142,7 @@ function createApp({ db = database, mailer = createMailer() } = {}) {
   );
   registerCourseRoutes(app, { db, auth, requireRole, wrap, audit });
   registerMessagingRoutes(app, { db, auth, requireRole, wrap, audit, notify });
+  registerGroupMessagingRoutes(app, { db, auth, wrap, audit });
   registerAssistantRoutes(app, {
     db,
     wrap,
@@ -1158,6 +1166,13 @@ function createApp({ db = database, mailer = createMailer() } = {}) {
     }),
   );
   registerQuestionnaireRoutes(app, { db, auth, requireRole, wrap, audit });
+  registerQuestionnaireImport(app, {
+    db,
+    requireRole,
+    wrap,
+    lockCurrentUser,
+    audit,
+  });
   registerExportRoutes(app, { db, auth, requireRole, wrap, audit });
   registerStaffTaskRoutes(app, { db, auth, requireRole, wrap, audit, notify });
   registerAutomationRoutes(app, { db, auth, requireRole, wrap, audit });
@@ -1200,6 +1215,16 @@ function createApp({ db = database, mailer = createMailer() } = {}) {
         error:
           "Сервер занят или база временно недоступна. Повторите действие через несколько секунд.",
         code: "DATABASE_BUSY",
+      });
+    if (
+      ["required_course_incomplete", "required_course_unavailable"].includes(
+        err.code,
+      )
+    )
+      return res.status(409).json({
+        error: err.message,
+        code: err.code,
+        required_course_id: err.required_course_id,
       });
     if (err.status) return res.status(err.status).json({ error: err.message });
     console.error("Unhandled request error:", err.code || err.name);
